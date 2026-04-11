@@ -1,0 +1,72 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}طلب #{{ order.id }}{% endblock %}
+{% block nav_orders %}active{% endblock %}
+{% block topbar_title %}طلب #{{ order.id }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-head-title">طلب #{{ order.id }} — طاولة {{ order.table.number }}</div>
+  <div class="page-head-actions">
+    <a href="/dashboard/orders/{{ order.id }}/receipt/" target="_blank" class="btn btn-yellow btn-sm">🖨️ طباعة الوصل PDF</a>
+    <a href="/dashboard/orders/" class="btn btn-outline btn-sm">← رجوع</a>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+  <div class="card">
+    <div class="card-title">تفاصيل الطلب</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.85rem;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray);">رقم الطلب</span><strong>#{{ order.id }}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray);">الطاولة</span><strong>{{ order.table.number }}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray);">العميل</span><strong>{{ order.customer_name|default:"—" }}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray);">الجوال</span><strong>{{ order.customer_phone|default:"—" }}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--gray);">التاريخ</span><strong>{{ order.created_at|date:"d/m/Y H:i" }}</strong></div>
+      {% if order.notes %}<div style="padding:8px;background:rgba(255,107,0,.08);border-right:2px solid var(--orange);color:var(--orange);font-size:.8rem;">{{ order.notes }}</div>{% endif %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">تعديل الحالة</div>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">حالة الطلب</label>
+        <select name="status" class="form-select">
+          <option value="new" {% if order.status == 'new' %}selected{% endif %}>جديد</option>
+          <option value="in_progress" {% if order.status == 'in_progress' %}selected{% endif %}>قيد التحضير</option>
+          <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>جاهز</option>
+          <option value="done" {% if order.status == 'done' %}selected{% endif %}>تم</option>
+          <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>ملغي</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">حالة الدفع</label>
+        <select name="payment_status" class="form-select">
+          <option value="pending" {% if order.payment_status == 'pending' %}selected{% endif %}>في الانتظار</option>
+          <option value="paid" {% if order.payment_status == 'paid' %}selected{% endif %}>مدفوع</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-yellow" style="width:100%;">حفظ التغييرات</button>
+    </form>
+  </div>
+</div>
+<div class="card">
+  <div class="card-title">الأصناف المطلوبة</div>
+  <div class="table-wrap">
+    <table class="dt">
+      <tr><th>الصنف</th><th>الإضافات</th><th>ملاحظات</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>
+      {% for item in order.items.all %}
+      <tr>
+        <td><strong>{{ item.menu_item.name_ar }}</strong></td>
+        <td style="font-size:.78rem;color:var(--orange);">{% for t in item.toppings.all %}{{ t.name_ar }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if not item.toppings.all %}—{% endif %}</td>
+        <td style="font-size:.78rem;color:var(--gray);">{{ item.notes|default:"—" }}</td>
+        <td style="text-align:center;">{{ item.quantity }}</td>
+        <td>₪{{ item.unit_price }}</td>
+        <td style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--yellow);">₪{{ item.get_subtotal }}</td>
+      </tr>
+      {% endfor %}
+      <tr>
+        <td colspan="5" style="text-align:left;font-weight:700;color:var(--gray);">المجموع الكلي</td>
+        <td style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--yellow);">₪{{ order.total_price }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+{% endblock %}

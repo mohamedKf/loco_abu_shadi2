@@ -1,0 +1,23 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}تعديل إضافة{% endblock %}
+{% block nav_tops %}active{% endblock %}
+{% block topbar_title %}تعديل إضافة{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-head-title">تعديل: {{ topping.name_ar }}</div>
+  <a href="/dashboard/menu/topping/" class="btn btn-outline btn-sm">← رجوع</a>
+</div>
+<div class="form-wrap">
+  <div class="card">
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group"><label class="form-label">الاسم عربي *</label>{{ form.name_ar }}</div>
+      <div class="form-group"><label class="form-label">الاسم عبري</label>{{ form.name_he }}</div>
+      <div class="form-group"><label class="form-label">الاسم إنجليزي</label>{{ form.name }}</div>
+      <div class="form-group"><label class="form-label">السعر (₪)</label>{{ form.price }}</div>
+      <div class="form-check">{{ form.is_available }}<label>متاح</label></div>
+      <button type="submit" class="btn btn-yellow" style="margin-top:14px;">💾 حفظ</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

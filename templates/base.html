@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}LOCO أبو شادي{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#0a0a0a; --deep:#111; --card:#161616;
+  --yellow:#FFD600; --orange:#FF6B00; --red:#CC2200;
+  --white:#F5F0E8; --gray:#888; --green:#00aa44;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--black);color:var(--white);font-family:'Cairo',sans-serif;min-height:100vh;}
+a{color:var(--yellow);text-decoration:none;}
+.btn{display:inline-block;padding:10px 24px;font-family:'Cairo',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:1px;border:none;cursor:pointer;transition:all .2s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
+.btn-yellow{background:var(--yellow);color:var(--black);}
+.btn-yellow:hover{background:var(--orange);color:#fff;}
+.btn-outline{background:transparent;color:var(--yellow);border:2px solid var(--yellow);}
+.btn-outline:hover{background:var(--yellow);color:var(--black);}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:#aa1a00;}
+.card{background:var(--card);border:1px solid rgba(255,214,0,.08);padding:20px;margin-bottom:12px;}
+.badge{display:inline-block;padding:2px 10px;font-size:.72rem;font-weight:700;letter-spacing:1px;border-radius:2px;}
+.badge-new{background:var(--yellow);color:var(--black);}
+.badge-progress{background:var(--orange);color:#fff;}
+.badge-ready{background:#00aa44;color:#fff;}
+.badge-done{background:#444;color:#aaa;}
+.badge-cancelled{background:var(--red);color:#fff;}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
+{% block extra_js %}{% endblock %}
+</body>
+</html>

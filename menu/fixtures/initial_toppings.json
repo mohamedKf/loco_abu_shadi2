@@ -1,0 +1,332 @@
+[
+  {
+    "model": "menu.toppinggroup",
+    "pk": 1,
+    "fields": {
+      "name": "Bread Spreads",
+      "name_ar": "مرطبات الخبز",
+      "name_he": "ממרחים ללחם",
+      "sort_order": 1,
+      "icon": "🍞"
+    }
+  },
+  {
+    "model": "menu.toppinggroup",
+    "pk": 2,
+    "fields": {
+      "name": "Vegetables",
+      "name_ar": "خضروات وتوابل",
+      "name_he": "ירקות ותוספות",
+      "sort_order": 2,
+      "icon": "🥗"
+    }
+  },
+  {
+    "model": "menu.toppinggroup",
+    "pk": 3,
+    "fields": {
+      "name": "Sauces",
+      "name_ar": "صلصات",
+      "name_he": "רטבים",
+      "sort_order": 3,
+      "icon": "🥫"
+    }
+  },
+  {
+    "model": "menu.toppinggroup",
+    "pk": 4,
+    "fields": {
+      "name": "Extras",
+      "name_ar": "إضافات",
+      "name_he": "תוספות מיוחדות",
+      "sort_order": 4,
+      "icon": "⭐"
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 1,
+    "fields": {
+      "group": 1,
+      "name": "Hummus",
+      "name_ar": "حمص",
+      "name_he": "חומוס",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 1
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 2,
+    "fields": {
+      "group": 1,
+      "name": "Tahini",
+      "name_ar": "طحينة",
+      "name_he": "טחינה",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 2
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 3,
+    "fields": {
+      "group": 1,
+      "name": "Amba",
+      "name_ar": "عمبة",
+      "name_he": "עמבה",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 3
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 4,
+    "fields": {
+      "group": 1,
+      "name": "Garlic Sauce",
+      "name_ar": "ثوم",
+      "name_he": "שום",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 4
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 5,
+    "fields": {
+      "group": 1,
+      "name": "Hot Sauce",
+      "name_ar": "صلصة حارة",
+      "name_he": "רוטב חריף",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 5
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 6,
+    "fields": {
+      "group": 1,
+      "name": "Matbucha",
+      "name_ar": "مطبوخة",
+      "name_he": "מטבוחה",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 6
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 7,
+    "fields": {
+      "group": 2,
+      "name": "Pickles",
+      "name_ar": "مخللات",
+      "name_he": "חמוצים",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 7
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 8,
+    "fields": {
+      "group": 2,
+      "name": "Tomatoes",
+      "name_ar": "طماطم",
+      "name_he": "עגבניות",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 8
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 9,
+    "fields": {
+      "group": 2,
+      "name": "Onions",
+      "name_ar": "بصل",
+      "name_he": "בצל",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 9
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 10,
+    "fields": {
+      "group": 2,
+      "name": "Lettuce",
+      "name_ar": "خس",
+      "name_he": "חסה",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 10
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 11,
+    "fields": {
+      "group": 2,
+      "name": "Hot Peppers",
+      "name_ar": "فلفل حار",
+      "name_he": "פלפל חריף",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 11
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 12,
+    "fields": {
+      "group": 2,
+      "name": "Cucumbers",
+      "name_ar": "خيار",
+      "name_he": "מלפפון",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 12
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 13,
+    "fields": {
+      "group": 2,
+      "name": "Cabbage",
+      "name_ar": "ملفوف",
+      "name_he": "כרוב",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 13
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 14,
+    "fields": {
+      "group": 3,
+      "name": "Ketchup",
+      "name_ar": "كاتشاب",
+      "name_he": "קטשופ",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 14
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 15,
+    "fields": {
+      "group": 3,
+      "name": "Mustard",
+      "name_ar": "مسطردة",
+      "name_he": "חרדל",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 15
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 16,
+    "fields": {
+      "group": 3,
+      "name": "Mayonnaise",
+      "name_ar": "مايونيز",
+      "name_he": "מיונז",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 16
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 17,
+    "fields": {
+      "group": 3,
+      "name": "BBQ Sauce",
+      "name_ar": "صلصة باربيكيو",
+      "name_he": "רוטב ברביקיו",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 17
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 18,
+    "fields": {
+      "group": 3,
+      "name": "Spicy Mayo",
+      "name_ar": "مايو حارة",
+      "name_he": "מיונז חריף",
+      "price": "0",
+      "is_available": true,
+      "sort_order": 18
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 19,
+    "fields": {
+      "group": 4,
+      "name": "Fries",
+      "name_ar": "بطاطس مقلية",
+      "name_he": "צ'יפס",
+      "price": "10",
+      "is_available": true,
+      "sort_order": 19
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 20,
+    "fields": {
+      "group": 4,
+      "name": "Extra Egg",
+      "name_ar": "بيضة إضافية",
+      "name_he": "ביצה נוספת",
+      "price": "5",
+      "is_available": true,
+      "sort_order": 20
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 21,
+    "fields": {
+      "group": 4,
+      "name": "Extra Cheese",
+      "name_ar": "جبنة إضافية",
+      "name_he": "גבינה נוספת",
+      "price": "5",
+      "is_available": true,
+      "sort_order": 21
+    }
+  },
+  {
+    "model": "menu.topping",
+    "pk": 22,
+    "fields": {
+      "group": 4,
+      "name": "Avocado",
+      "name_ar": "أفوكادو",
+      "name_he": "אבוקדו",
+      "price": "8",
+      "is_available": true,
+      "sort_order": 22
+    }
+  }
+]

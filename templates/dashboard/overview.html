@@ -1,0 +1,124 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}نظرة عامة{% endblock %}
+{% block nav_overview %}active{% endblock %}
+{% block topbar_title %}📊 نظرة عامة{% endblock %}
+{% block content %}
+
+<!-- Period switcher -->
+<div style="display:flex;gap:8px;margin-bottom:20px;align-items:center;">
+  <span style="font-size:.75rem;color:var(--gray);font-weight:700;letter-spacing:1px;">الفترة:</span>
+  <a href="?period=today" class="btn btn-sm {% if period == 'today' %}btn-yellow{% else %}btn-ghost{% endif %}">اليوم</a>
+  <a href="?period=week"  class="btn btn-sm {% if period == 'week'  %}btn-yellow{% else %}btn-ghost{% endif %}">7 أيام</a>
+  <a href="?period=month" class="btn btn-sm {% if period == 'month' %}btn-yellow{% else %}btn-ghost{% endif %}">هذا الشهر</a>
+  <a href="?period=all"   class="btn btn-sm {% if period == 'all'   %}btn-yellow{% else %}btn-ghost{% endif %}">الكل</a>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid">
+  <div class="stat">
+    <div class="stat-label">إجمالي المبيعات</div>
+    <div class="stat-val">₪{{ summary.total_revenue }}</div>
+    <div class="stat-sub">{% if period == 'today' %}اليوم{% elif period == 'week' %}آخر 7 أيام{% elif period == 'month' %}هذا الشهر{% else %}كل الوقت{% endif %}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">عدد الطلبات</div>
+    <div class="stat-val">{{ summary.total_orders }}</div>
+    <div class="stat-sub">طلب</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">متوسط الطلب</div>
+    <div class="stat-val">₪{{ summary.avg_order }}</div>
+    <div class="stat-sub">للطلب الواحد</div>
+  </div>
+  <div class="stat stat-green">
+    <div class="stat-label">مدفوع</div>
+    <div class="stat-val">{{ summary.paid_orders }}</div>
+    <div class="stat-sub">من {{ summary.total_orders }} طلب</div>
+  </div>
+  <div class="stat stat-orange">
+    <div class="stat-label">انتظار دفع</div>
+    <div class="stat-val">{{ summary.pending_orders }}</div>
+    <div class="stat-sub">طلب لم يُدفع</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+  <!-- Order status -->
+  <div class="card">
+    <div class="card-title">حالة الطلبات</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,214,0,.07);border-right:3px solid var(--yellow);">
+        <span style="font-size:.85rem;font-weight:700;">🆕 جديد</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--yellow);">{{ summary.by_status.new }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,107,0,.07);border-right:3px solid var(--orange);">
+        <span style="font-size:.85rem;font-weight:700;">👨‍🍳 قيد التحضير</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--orange);">{{ summary.by_status.in_progress }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(0,170,68,.07);border-right:3px solid var(--green);">
+        <span style="font-size:.85rem;font-weight:700;">✅ جاهز</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--green);">{{ summary.by_status.ready }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.02);border-right:3px solid #444;">
+        <span style="font-size:.85rem;font-weight:700;color:var(--gray);">🏁 تم</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gray);">{{ summary.by_status.done }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top items -->
+  <div class="card">
+    <div class="card-title">الأكثر مبيعاً</div>
+    {% for item in top_items %}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="background:var(--yellow);color:var(--black);font-family:'Bebas Neue',sans-serif;font-size:.85rem;padding:1px 7px;min-width:22px;text-align:center;">{{ forloop.counter }}</span>
+        <span style="font-size:.83rem;">{{ item.menu_item__name_ar }}</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+        <span style="color:var(--yellow);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;">{{ item.total_qty }}×</span>
+        <span style="color:var(--green);font-size:.8rem;">₪{{ item.total_revenue }}</span>
+      </div>
+    </div>
+    {% empty %}
+    <div style="color:var(--gray);font-size:.83rem;padding:20px 0;text-align:center;">
+      لا توجد بيانات بعد<br>
+      <span style="font-size:.75rem;">اطلب من قسم الطلبات للتحقق</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Recent orders -->
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <div class="card-title" style="margin:0;">آخر الطلبات</div>
+    <a href="/dashboard/orders/" class="btn btn-outline btn-sm">عرض الكل</a>
+  </div>
+  <div class="table-wrap">
+    <table class="dt">
+      <tr><th>#</th><th>الطاولة</th><th>المبلغ</th><th>الدفع</th><th>الحالة</th><th>الوقت</th><th></th></tr>
+      {% for order in recent_orders %}
+      <tr>
+        <td style="font-family:'Bebas Neue',sans-serif;color:var(--yellow);font-size:1.1rem;">#{{ order.id }}</td>
+        <td>{% if order.table %}طاولة {{ order.table.number }}{% else %}<span style="color:var(--orange);">🏪 كاشير</span>{% endif %}</td>
+        <td style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--yellow);">₪{{ order.total_price }}</td>
+        <td style="font-size:.78rem;color:var(--gray);">{{ order.get_payment_method_display }}</td>
+        <td>
+          {% if order.status == 'new' %}<span class="badge badge-new">🆕 جديد</span>
+          {% elif order.status == 'in_progress' %}<span class="badge badge-in_progress">👨‍🍳 تحضير</span>
+          {% elif order.status == 'ready' %}<span class="badge badge-ready">✅ جاهز</span>
+          {% elif order.status == 'done' %}<span class="badge badge-done">🏁 تم</span>
+          {% elif order.status == 'cancelled' %}<span class="badge badge-cancelled">❌ ملغي</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--gray);font-size:.75rem;">{{ order.created_at|time:"H:i" }}</td>
+        <td><a href="/dashboard/orders/{{ order.id }}/" class="btn btn-ghost btn-sm">عرض</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;color:var(--gray);padding:24px;">لا توجد طلبات بعد</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

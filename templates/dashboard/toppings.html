@@ -1,0 +1,125 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}الإضافات{% endblock %}
+{% block nav_tops %}active{% endblock %}
+{% block topbar_title %}🥗 الإضافات{% endblock %}
+{% block content %}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+  <!-- Left: current toppings by group -->
+  <div>
+    <div class="page-header" style="margin-bottom:16px;">
+      <div class="page-head-title">الإضافات الحالية</div>
+    </div>
+    {% for group in groups %}
+    <div style="margin-bottom:20px;">
+      <div style="font-size:.72rem;font-weight:700;color:var(--yellow);letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+        <span>{{ group.icon }}</span> {{ group.name_ar }}
+      </div>
+      <div class="card" style="padding:0;">
+        <table class="dt">
+          <tr><th>الاسم</th><th>عبري</th><th>السعر</th><th>متاح</th><th></th></tr>
+          {% for top in group.toppings.all %}
+          <tr>
+            <td><strong>{{ top.name_ar }}</strong></td>
+            <td style="font-size:.78rem;color:var(--gray);">{{ top.name_he|default:"—" }}</td>
+            <td style="font-family:'Bebas Neue',sans-serif;color:{% if top.price > 0 %}var(--yellow){% else %}var(--gray){% endif %};">
+              {% if top.price > 0 %}+₪{{ top.price }}{% else %}مجاني{% endif %}
+            </td>
+            <td>
+              <label class="toggle">
+                <input type="checkbox" {% if top.is_available %}checked{% endif %} onchange="toggleTop({{ top.id }},this)">
+                <span class="toggle-slider"></span>
+              </label>
+            </td>
+            <td>
+              <div style="display:flex;gap:5px;">
+                <a href="/dashboard/menu/topping/{{ top.id }}/edit/" class="btn btn-outline btn-sm">تعديل</a>
+                <form method="POST" action="/dashboard/menu/topping/{{ top.id }}/delete/" onsubmit="return confirm('حذف؟')">
+                  {% csrf_token %}<button type="submit" class="btn btn-red btn-sm">حذف</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" style="color:var(--gray);padding:12px;font-size:.8rem;">لا توجد إضافات في هذه المجموعة</td></tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Right: add topping form -->
+  <div>
+    <div class="page-header" style="margin-bottom:16px;">
+      <div class="page-head-title">إضافة جديدة</div>
+    </div>
+    <div class="card">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">المجموعة *</label>
+          <select name="group" class="form-select" required>
+            <option value="">— اختر المجموعة —</option>
+            {% for g in groups %}
+            <option value="{{ g.id }}">{{ g.icon }} {{ g.name_ar }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الاسم عربي *</label>
+          <input class="form-input" type="text" name="name_ar" dir="rtl" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الاسم عبري</label>
+          <input class="form-input" type="text" name="name_he" dir="rtl">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الاسم إنجليزي</label>
+          <input class="form-input" type="text" name="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">السعر (₪) — 0 = مجاني</label>
+          <input class="form-input" type="number" name="price" value="0" min="0" step="0.5" style="max-width:120px;">
+        </div>
+        <div class="form-check" style="margin-bottom:14px;">
+          <input type="checkbox" name="is_available" checked id="avail" class="form-check-input">
+          <label for="avail">متاح</label>
+        </div>
+        <button type="submit" class="btn btn-yellow" style="width:100%;">+ إضافة</button>
+      </form>
+    </div>
+
+    <!-- Groups management -->
+    <div style="margin-top:20px;">
+      <div class="page-head-title" style="font-size:1rem;margin-bottom:12px;">المجموعات</div>
+      <div class="card" style="padding:0;">
+        <table class="dt">
+          <tr><th>الأيقونة</th><th>الاسم</th><th>الترتيب</th></tr>
+          {% for g in groups %}
+          <tr>
+            <td>{{ g.icon }}</td>
+            <td>{{ g.name_ar }}</td>
+            <td style="color:var(--gray);">{{ g.sort_order }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function toggleTop(id, cb) {
+  const r = await fetch(`/dashboard/menu/topping/${id}/toggle/`, {
+    method:'POST', headers:{'X-CSRFToken': getCookie('csrftoken')}
+  });
+  const d = await r.json();
+  cb.checked = d.is_available;
+}
+function getCookie(n){const v=document.cookie.match('(^|;)\s*'+n+'\s*=\s*([^;]+)');return v?v.pop():'';}
+</script>
+{% endblock %}

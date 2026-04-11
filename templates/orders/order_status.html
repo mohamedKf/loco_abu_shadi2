@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}حالة الطلب #{{ order.id }}{% endblock %}
+{% block extra_css %}
+<style>
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:rgba(10,10,10,.96);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,214,0,.1);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--yellow);letter-spacing:3px;text-decoration:none;}
+.status-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 40px;text-align:center;}
+.order-num{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--yellow);letter-spacing:4px;line-height:1;}
+.status-icon{font-size:4rem;margin:20px 0 10px;}
+.status-text{font-size:1.3rem;font-weight:700;margin-bottom:6px;}
+.status-sub{color:var(--gray);font-size:.88rem;}
+.progress-bar{display:flex;width:100%;max-width:400px;margin:24px 0;}
+.progress-step{flex:1;text-align:center;padding:8px 4px;font-size:.68rem;font-weight:700;color:var(--gray);border-bottom:3px solid #333;transition:all .3s;}
+.progress-step.done{color:var(--yellow);border-color:var(--yellow);}
+.progress-step.current{color:var(--orange);border-color:var(--orange);}
+.items-summary{background:var(--card);border:1px solid rgba(255,214,0,.1);padding:16px 20px;margin:20px 0;width:100%;max-width:400px;text-align:right;}
+.item-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.85rem;}
+.total-row{display:flex;justify-content:space-between;padding:10px 0 0;font-weight:900;font-size:1rem;color:var(--yellow);}
+
+@media(max-width:600px){
+  .page-wrap,.cart-wrap,.checkout-wrap{padding:70px 12px 120px !important;}
+  .form-row{grid-template-columns:1fr !important;}
+  .payment-options{grid-template-columns:1fr 1fr !important;}
+  nav{padding:10px 14px !important;}
+  .page-title{font-size:1.5rem !important;}
+}
+</style>
+{% endblock %}
+{% block body %}
+<nav>
+  <a href="/" class="nav-logo">LOCO</a>
+  <span style="color:var(--gray);font-size:.8rem;">طاولة {{ order.table.number }}</span>
+</nav>
+<div class="status-wrap">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--yellow);letter-spacing:3px;margin-bottom:4px;">LOCO أبو شادي</div>
+
+  <div class="order-num">#{{ order.id }}</div>
+
+  {% if order.status == 'new' %}
+    <div class="status-icon">⏳</div>
+    <div class="status-text">تم استلام طلبك!</div>
+    <div class="status-sub">جارٍ التحضير قريباً...</div>
+  {% elif order.status == 'in_progress' %}
+    <div class="status-icon">👨‍🍳</div>
+    <div class="status-text">يتم تحضير طلبك الآن</div>
+    <div class="status-sub">قريباً جاهز!</div>
+  {% elif order.status == 'ready' %}
+    <div class="status-icon">✅</div>
+    <div class="status-text" style="color:#00cc55;">طلبك جاهز!</div>
+    <div class="status-sub">يمكنك الاستلام الآن 🎉</div>
+  {% elif order.status == 'done' %}
+    <div class="status-icon">🎉</div>
+    <div class="status-text">شكراً لزيارتك!</div>
+    <div class="status-sub">بالعافية — نراك قريباً</div>
+  {% endif %}
+
+  <div class="progress-bar">
+    <div class="progress-step done">جديد</div>
+    <div class="progress-step {% if order.status == 'in_progress' %}current{% elif order.status in 'ready,done' %}done{% endif %}">قيد التحضير</div>
+    <div class="progress-step {% if order.status == 'ready' %}current{% elif order.status == 'done' %}done{% endif %}">جاهز</div>
+    <div class="progress-step {% if order.status == 'done' %}done{% endif %}">تم</div>
+  </div>
+
+  <div class="items-summary">
+    {% for item in order.items.all %}
+    <div class="item-row">
+      <span style="color:var(--yellow);">₪{{ item.get_subtotal }}</span>
+      <div>
+        <span>{{ item.menu_item.name_ar }} × {{ item.quantity }}</span>
+        {% if item.toppings.all %}<div style="font-size:.75rem;color:var(--orange);">+ {% for t in item.toppings.all %}{{ t.name_ar }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="total-row">
+      <span>₪{{ order.total_price }}</span>
+      <span>المجموع</span>
+    </div>
+    <div style="font-size:.78rem;color:var(--gray);padding-top:8px;text-align:left;">{{ order.get_payment_method_display }}</div>
+  </div>
+
+  <a href="/menu/" class="btn btn-outline" style="margin-top:8px;">إضافة طلب آخر</a>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+{% if order.status != 'done' and order.status != 'cancelled' %}
+setTimeout(()=>location.reload(), 10000);
+{% endif %}
+</script>
+{% endblock %}

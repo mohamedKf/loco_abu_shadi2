@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ item.name_ar }} — LOCO</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{--black:#0a0a0a;--yellow:#FFD600;--orange:#FF6B00;--red:#CC2200;--white:#F5F0E8;--gray:#666;--green:#00aa44;}
+body{background:var(--black);color:var(--white);font-family:'Cairo',sans-serif;min-height:100vh;}
+a{text-decoration:none;color:var(--yellow);}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:rgba(10,10,10,.97);border-bottom:2px solid var(--yellow);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--yellow);letter-spacing:4px;}
+.nav-cart{background:var(--yellow);color:var(--black);padding:8px 18px;font-weight:900;font-size:.88rem;position:relative;}
+.nav-cart-count{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;width:18px;height:18px;border-radius:50%;font-size:.6rem;display:flex;align-items:center;justify-content:center;font-weight:900;}
+
+/* LAYOUT */
+.page{max-width:860px;margin:0 auto;padding:80px 16px 40px;}
+.back{display:inline-block;color:var(--gray);font-size:.82rem;margin-bottom:20px;}
+.back:hover{color:var(--yellow);}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+.img-box{background:#111;border:1px solid #222;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.img-box img{width:100%;height:100%;object-fit:cover;}
+.img-box .emoji{font-size:5rem;}
+.cat{font-size:.68rem;font-weight:700;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.name{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:var(--white);letter-spacing:2px;line-height:1;}
+.name-he{font-size:.95rem;color:var(--gray);margin:4px 0 10px;}
+.price{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--yellow);margin-bottom:16px;}
+.desc{font-size:.85rem;color:var(--gray);line-height:1.7;margin-bottom:16px;}
+
+/* WIZARD */
+.section-lbl{font-size:.68rem;font-weight:700;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.prog-bar{display:flex;gap:4px;height:4px;margin-bottom:10px;}
+.prog-seg{flex:1;border-radius:2px;background:rgba(255,255,255,.1);transition:background .2s;}
+.prog-seg.active{background:var(--yellow);}
+.prog-seg.done{background:rgba(255,214,0,.4);}
+.step-title{font-size:.88rem;font-weight:700;color:var(--orange);margin-bottom:8px;display:flex;justify-content:space-between;}
+.step-count{color:var(--gray);font-weight:400;font-size:.72rem;}
+.tops-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+.top-item{display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:.82rem;transition:all .15s;-webkit-tap-highlight-color:transparent;user-select:none;}
+.top-item.sel{border-color:var(--yellow);background:rgba(255,214,0,.08);}
+.top-item input{accent-color:var(--yellow);width:14px;height:14px;pointer-events:none;flex-shrink:0;}
+.top-price{color:var(--orange);font-size:.72rem;margin-right:4px;}
+.nav-btns{display:flex;gap:8px;}
+.nbtn{flex:1;padding:11px;border:none;font-family:'Cairo',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.nbtn-prev{background:transparent;color:var(--gray);border:1px solid rgba(255,255,255,.15);}
+.nbtn-prev:hover{color:var(--white);border-color:rgba(255,255,255,.3);}
+.nbtn-next{background:var(--yellow);color:var(--black);}
+.nbtn-next:hover{background:var(--orange);color:#fff;}
+.nbtn-done{background:var(--green);color:#fff;}
+
+/* ORDER */
+.qty-row{display:flex;align-items:center;gap:14px;margin:10px 0 14px;}
+.qty-btn{background:var(--yellow);color:var(--black);border:none;width:38px;height:38px;font-size:1.4rem;font-weight:900;cursor:pointer;line-height:1;-webkit-tap-highlight-color:transparent;}
+.qty-btn:active{background:var(--orange);}
+.qty-num{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;min-width:36px;text-align:center;}
+.notes{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 12px;font-family:'Cairo',sans-serif;font-size:.88rem;resize:none;margin-bottom:14px;}
+.notes:focus{outline:none;border-color:var(--yellow);}
+.add-btn{width:100%;padding:14px;background:var(--yellow);color:var(--black);border:none;font-family:'Cairo',sans-serif;font-weight:900;font-size:1rem;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.add-btn:hover,.add-btn:active{background:var(--orange);color:#fff;}
+.add-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--yellow);color:var(--black);padding:10px 28px;font-weight:900;font-size:.9rem;opacity:0;pointer-events:none;z-index:9999;transition:opacity .3s;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+@media(max-width:680px){
+  .grid{grid-template-columns:1fr;}
+  .img-box{max-height:220px;}
+  .name{font-size:1.8rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <a href="/" class="nav-logo">🔥 LOCO</a>
+  <a href="/orders/cart/" class="nav-cart">
+    🛒 السلة
+    {% if cart_count > 0 %}
+    <span class="nav-cart-count">{{ cart_count }}</span>
+    {% endif %}
+  </a>
+</div>
+
+<div class="page">
+  <a href="/" class="back">← رجوع للقائمة</a>
+
+  <div class="grid">
+    <!-- Image -->
+    <div class="img-box">
+      {% if item.image %}
+      <img src="{{ item.image.url }}" alt="{{ item.name_ar }}">
+      {% else %}
+      <span class="emoji">🥪</span>
+      {% endif %}
+    </div>
+
+    <!-- Details -->
+    <div>
+      <div class="cat">{{ item.category.name_ar }}</div>
+      <div class="name">{{ item.name_ar }}</div>
+      {% if item.name_he %}<div class="name-he">{{ item.name_he }}</div>{% endif %}
+      <div class="price">₪{{ item.price }}</div>
+      {% if item.description %}<div class="desc">{{ item.description }}</div>{% endif %}
+
+      <!-- WIZARD (shown if toppings exist) -->
+      <div id="wizardBox" style="display:none;">
+        <div class="section-lbl">الإضافات</div>
+        <div class="prog-bar" id="progBar"></div>
+        <div class="step-title">
+          <span id="stepName"></span>
+          <span class="step-count" id="stepCount"></span>
+        </div>
+        <div class="tops-grid" id="topsGrid"></div>
+        <div class="nav-btns">
+          <button class="nbtn nbtn-prev" id="btnPrev" onclick="goStep(-1)">← السابق</button>
+          <button class="nbtn nbtn-next" id="btnNext" onclick="goStep(1)">التالي →</button>
+        </div>
+      </div>
+
+      <!-- ORDER (shown after wizard or if no toppings) -->
+      <div id="orderBox" style="display:none;">
+        <div class="section-lbl">الكمية</div>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
+          <span class="qty-num" id="qtyNum">1</span>
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        </div>
+        <div class="section-lbl">ملاحظات للمطبخ</div>
+        <textarea class="notes" id="notesBox" rows="2" placeholder="مثال: بدون بصل..."></textarea>
+        <button class="add-btn" id="addBtn" onclick="addToCart()">أضف للسلة 🛒</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ تمت الإضافة للسلة!</div>
+
+<!-- Toppings data -->
+<script>
+var GROUPS = [
+  {% for group in topping_groups %}
+  { id:{{ group.id }}, name:"{{ group.name_ar|escapejs }}", icon:"{{ group.icon }}", toppings:[
+    {% for t in group.toppings.all %}
+    { id:{{ t.id }}, name:"{{ t.name_ar|escapejs }}", price:{{ t.price|stringformat:"f" }} },
+    {% endfor %}
+  ]},
+  {% endfor %}
+].filter(function(g){ return g.toppings && g.toppings.length > 0; });
+
+var qty = 1;
+var curStep = 0;
+var sel = {};
+
+function init() {
+  var wb = document.getElementById('wizardBox');
+  var ob = document.getElementById('orderBox');
+  if (GROUPS.length === 0) {
+    wb.style.display = 'none';
+    ob.style.display = 'block';
+  } else {
+    wb.style.display = 'block';
+    ob.style.display = 'none';
+    renderStep();
+  }
+}
+
+function renderStep() {
+  var g = GROUPS[curStep];
+  var total = GROUPS.length;
+
+  // Progress bar
+  var bar = document.getElementById('progBar');
+  bar.innerHTML = '';
+  for (var i = 0; i < total; i++) {
+    var seg = document.createElement('div');
+    seg.className = 'prog-seg' + (i === curStep ? ' active' : (i < curStep ? ' done' : ''));
+    bar.appendChild(seg);
+  }
+
+  // Title
+  document.getElementById('stepName').textContent = g.icon + ' ' + g.name;
+  document.getElementById('stepCount').textContent = (curStep + 1) + ' / ' + total;
+
+  // Toppings
+  var grid = document.getElementById('topsGrid');
+  grid.innerHTML = '';
+  for (var j = 0; j < g.toppings.length; j++) {
+    var t = g.toppings[j];
+    var div = document.createElement('div');
+    div.className = 'top-item' + (sel[t.id] ? ' sel' : '');
+    div.setAttribute('data-id', t.id);
+    div.onclick = function() { toggleSel(this); };
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !!sel[t.id];
+    var span = document.createElement('span');
+    var txt = t.name;
+    if (t.price > 0) txt += ' ';
+    span.textContent = txt;
+    if (t.price > 0) {
+      var pr = document.createElement('span');
+      pr.className = 'top-price';
+      pr.textContent = '+₪' + t.price;
+      span.appendChild(pr);
+    }
+    div.appendChild(cb);
+    div.appendChild(span);
+    grid.appendChild(div);
+  }
+
+  // Buttons
+  var prev = document.getElementById('btnPrev');
+  var next = document.getElementById('btnNext');
+  prev.style.display = curStep > 0 ? 'block' : 'none';
+  if (curStep === total - 1) {
+    next.textContent = '✅ تم الاختيار';
+    next.className = 'nbtn nbtn-done';
+  } else {
+    next.textContent = 'التالي →';
+    next.className = 'nbtn nbtn-next';
+  }
+}
+
+function toggleSel(el) {
+  var id = parseInt(el.getAttribute('data-id'));
+  sel[id] = !sel[id];
+  el.classList.toggle('sel', sel[id]);
+  el.querySelector('input').checked = sel[id];
+}
+
+function goStep(dir) {
+  if (dir === 1 && curStep === GROUPS.length - 1) {
+    document.getElementById('wizardBox').style.display = 'none';
+    document.getElementById('orderBox').style.display = 'block';
+    return;
+  }
+  curStep = Math.max(0, Math.min(GROUPS.length - 1, curStep + dir));
+  renderStep();
+}
+
+function changeQty(d) {
+  qty = Math.max(1, qty + d);
+  document.getElementById('qtyNum').textContent = qty;
+}
+
+function addToCart() {
+  var btn = document.getElementById('addBtn');
+  btn.disabled = true;
+  btn.textContent = '...';
+  var tops = Object.keys(sel).filter(function(id) { return sel[id]; }).map(Number);
+  var notes = document.getElementById('notesBox').value;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/orders/cart/add/');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+  xhr.onload = function() {
+    var d = JSON.parse(xhr.responseText);
+    if (d.success) {
+      var t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(function() { window.location.href = '/'; }, 1200);
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'أضف للسلة 🛒';
+    }
+  };
+  xhr.send(JSON.stringify({ item_id: {{ item.pk }}, quantity: qty, toppings: tops, notes: notes }));
+}
+
+function getCookie(n) {
+  var v = document.cookie.match('(^|;)\\s*' + n + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
+// Start
+init();
+</script>
+
+</body>
+</html>

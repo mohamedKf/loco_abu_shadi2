@@ -1,0 +1,71 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}التقارير{% endblock %}
+{% block nav_reports %}active{% endblock %}
+{% block topbar_title %}📈 التقارير{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-head-title">التقارير والمبيعات</div>
+  <div class="page-head-actions">
+    <a href="?days=1"  class="btn {% if days == 1 %}btn-yellow{% else %}btn-outline{% endif %} btn-sm">اليوم</a>
+    <a href="?days=7"  class="btn {% if days == 7 %}btn-yellow{% else %}btn-outline{% endif %} btn-sm">7 أيام</a>
+    <a href="?days=30" class="btn {% if days == 30 %}btn-yellow{% else %}btn-outline{% endif %} btn-sm">30 يوم</a>
+    <a href="/dashboard/reports/export/?days={{ days }}" class="btn btn-ghost btn-sm">📥 تصدير CSV</a>
+  </div>
+</div>
+<div class="stat-grid">
+  <div class="stat"><div class="stat-label">إجمالي المبيعات</div><div class="stat-val">₪{{ summary.total_revenue }}</div><div class="stat-sub">آخر {{ days }} يوم</div></div>
+  <div class="stat"><div class="stat-label">عدد الطلبات</div><div class="stat-val">{{ summary.total_orders }}</div></div>
+  <div class="stat"><div class="stat-label">متوسط الطلب</div><div class="stat-val">₪{{ summary.avg_order }}</div></div>
+  <div class="stat stat-green"><div class="stat-label">مدفوع</div><div class="stat-val">{{ summary.paid_orders }}</div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+  <div class="card">
+    <div class="card-title">الأكثر مبيعاً</div>
+    <table class="dt">
+      <tr><th>#</th><th>الصنف</th><th>الكمية</th><th>الإيراد</th></tr>
+      {% for item in top_items %}
+      <tr>
+        <td style="color:var(--gray);">{{ forloop.counter }}</td>
+        <td>{{ item.menu_item__name_ar }}</td>
+        <td style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--yellow);">{{ item.total_qty }}</td>
+        <td style="color:var(--green);">₪{{ item.total_revenue }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" style="color:var(--gray);padding:20px;text-align:center;">لا توجد بيانات</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-title">مبيعات بالفئة</div>
+    <table class="dt">
+      <tr><th>الفئة</th><th>الكمية</th><th>الإيراد</th></tr>
+      {% for cat in by_category %}
+      <tr>
+        <td>{{ cat.menu_item__category__name_ar }}</td>
+        <td style="font-family:'Bebas Neue',sans-serif;color:var(--yellow);">{{ cat.total_qty }}</td>
+        <td style="color:var(--green);">₪{{ cat.total_revenue }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" style="color:var(--gray);padding:20px;text-align:center;">لا توجد بيانات</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">المبيعات اليومية</div>
+  <div style="display:flex;gap:0;align-items:flex-end;height:120px;padding:10px 0;">
+    {% for day in summary.daily %}
+    {% with max_rev=summary.total_revenue %}
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;">
+      <div style="font-size:.6rem;color:var(--gray);">₪{{ day.revenue|floatformat:0 }}</div>
+      <div style="width:80%;background:var(--yellow);opacity:.8;border-radius:1px;min-height:4px;"
+           style="height:{% if day.revenue > 0 %}{{ day.revenue }}{% else %}0{% endif %}px;"></div>
+      <div style="font-size:.6rem;color:var(--gray);writing-mode:vertical-lr;transform:rotate(180deg);">{{ day.date }}</div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

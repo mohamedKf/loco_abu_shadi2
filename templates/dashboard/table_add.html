@@ -1,0 +1,25 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}إضافة طاولة{% endblock %}
+{% block nav_tables %}active{% endblock %}
+{% block topbar_title %}🪑 إضافة طاولة{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-head-title">إضافة طاولة جديدة</div>
+  <a href="/dashboard/tables/" class="btn btn-outline btn-sm">← رجوع</a>
+</div>
+<div class="form-wrap">
+  <div class="card">
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">رقم الطاولة *</label>
+        <input class="form-input" type="number" name="number" min="1" max="100" autofocus required placeholder="مثال: 1">
+      </div>
+      <div style="color:var(--gray);font-size:.8rem;margin-bottom:16px;">
+        سيتم توليد QR Code تلقائياً بعد الإضافة
+      </div>
+      <button type="submit" class="btn btn-yellow" style="width:100%;padding:12px;">+ إضافة الطاولة</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

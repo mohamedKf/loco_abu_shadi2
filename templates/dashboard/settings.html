@@ -1,0 +1,43 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}الإعدادات{% endblock %}
+{% block nav_settings %}active{% endblock %}
+{% block topbar_title %}⚙️ الإعدادات{% endblock %}
+{% block content %}
+<div style="max-width:600px;display:flex;flex-direction:column;gap:16px;">
+
+  <div class="card">
+    <div class="card-title">🖨️ إعدادات الطابعة</div>
+    <div style="font-size:.85rem;color:var(--gray);margin-bottom:16px;">
+      أضف هذه المتغيرات في ملف <code style="background:rgba(255,255,255,.08);padding:2px 6px;">.env</code>
+    </div>
+    <div style="background:#111;padding:14px;font-family:monospace;font-size:.82rem;color:#88ff88;line-height:1.8;">
+      # USB Printer (default)<br>
+      PRINTER_TYPE=usb<br>
+      PRINTER_USB_VENDOR=0x04b8<br>
+      PRINTER_USB_PRODUCT=0x0202<br>
+      <br>
+      # OR Network Printer (LAN/WiFi)<br>
+      PRINTER_TYPE=network<br>
+      PRINTER_HOST=192.168.1.200<br>
+      PRINTER_PORT=9100
+    </div>
+    <div style="margin-top:14px;">
+      <a href="/dashboard/printer/test/" class="btn btn-outline btn-sm">🖨️ اختبار الطابعة</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📄 وصل PDF</div>
+    <div style="font-size:.85rem;color:var(--gray);margin-bottom:12px;">
+      يمكنك طباعة وصل PDF من صفحة تفاصيل أي طلب
+    </div>
+    <a href="/dashboard/orders/" class="btn btn-yellow btn-sm">عرض الطلبات</a>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📱 SMS الإشعارات</div>
+    <div style="font-size:.85rem;color:var(--gray);">قريباً — Twilio SMS</div>
+  </div>
+
+</div>
+{% endblock %}

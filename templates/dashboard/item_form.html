@@ -1,0 +1,137 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}{{ action }} صنف{% block extra_js %}
+<script>
+const cb = document.querySelector('[name="sold_by_weight"]');
+const wf = document.getElementById('weightFields');
+if (cb) {
+  wf.style.display = cb.checked ? 'block' : 'none';
+  cb.addEventListener('change', () => wf.style.display = cb.checked ? 'block' : 'none');
+}
+</script>
+{% endblock %}
+{% block nav_menu %}active{% endblock %}
+{% block topbar_title %}{{ action }} صنف{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-head-title">{{ action }} صنف{% if item %}: {{ item.name_ar }}{% endif %}</div>
+  <a href="/dashboard/menu/" class="btn btn-outline btn-sm">← رجوع</a>
+</div>
+<div class="form-wrap">
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">المعلومات الأساسية</div>
+      <div class="form-group">
+        <label class="form-label">الفئة *</label>
+        {{ form.category }}
+        {% if form.category.errors %}<div class="form-error">{{ form.category.errors }}</div>{% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">الاسم عربي *</label>
+          {{ form.name_ar }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">الاسم عبري</label>
+          {{ form.name_he }}
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">الاسم إنجليزي</label>
+          {{ form.name }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">السعر (₪) *</label>
+          {{ form.price }}
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ترتيب العرض</label>
+          {{ form.sort_order }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">الصورة</div>
+      {% if item.image %}
+        <img src="{{ item.image.url }}" class="img-preview" alt="{{ item.name_ar }}">
+        <div style="font-size:.75rem;color:var(--gray);margin:6px 0;">صورة حالية — ارفع صورة جديدة للاستبدال</div>
+      {% endif %}
+      <div class="form-group">{{ form.image }}</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">معلومات إضافية (للصفحة التفصيلية)</div>
+      <div class="form-group">
+        <label class="form-label">وصف الصنف</label>
+        {{ form.description }}
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">سعرات حرارية</label>
+          {{ form.calories }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">بروتين (g)</label>
+          {{ form.protein }}
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">كربوهيدرات (g)</label>
+          {{ form.carbs }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">دهون (g)</label>
+          {{ form.fat }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">مواد مسببة للحساسية</label>
+        {{ form.allergens }}
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">خيارات</div>
+      <div class="form-check">{{ form.is_available }}<label>متاح للطلب</label></div>
+      <div class="form-check">{{ form.is_new }}<label>🆕 صنف جديد</label></div>
+      <div class="form-check">{{ form.is_spicy }}<label>🌶️ حار</label></div>
+      <div class="form-check">{{ form.sold_by_weight }}<label>⚖️ يُباع بالوزن (مثل المرتديلا)</label></div>
+      <div id="weightFields" style="margin-top:10px;padding:12px;background:rgba(255,214,0,.05);border:1px solid rgba(255,214,0,.1);display:none;">
+        <div class="form-group">
+          <label class="form-label">وحدة الوزن</label>
+          {{ form.weight_unit }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">السعر لكل 100 غرام (₪)</label>
+          {{ form.price_per_unit }}
+        </div>
+      </div>
+    </div>
+
+    {% if form.toppings.field.queryset.count > 0 %}
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">الإضافات المتاحة لهذا الصنف</div>
+      <div class="toppings-check">
+        {% for topping in form.toppings.field.queryset %}
+        <label>
+          <input type="checkbox" name="toppings" value="{{ topping.pk }}"
+            {% if topping in form.instance.toppings.all %}checked{% endif %}>
+          {{ topping.name_ar }} {% if topping.price > 0 %}(+₪{{ topping.price }}){% endif %}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="display:flex;gap:10px;">
+      <button type="submit" class="btn btn-yellow" style="padding:12px 32px;font-size:.95rem;">💾 حفظ</button>
+      <a href="/dashboard/menu/" class="btn btn-outline" style="padding:12px 24px;">إلغاء</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شاشة المطبخ — LOCO</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0a0a0a;--deep:#111;--card:#161616;--yellow:#FFD600;--orange:#FF6B00;--red:#CC2200;--white:#F5F0E8;--gray:#888;--green:#00aa44;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--white);font-family:'Cairo',sans-serif;min-height:100vh;}
+.kitchen-nav{background:var(--deep);border-bottom:2px solid var(--yellow);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;gap:8px;flex-wrap:wrap;}
+.kitchen-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--yellow);letter-spacing:3px;white-space:nowrap;}
+.nav-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.nav-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.nav-right a,.nav-left a{color:var(--gray);font-size:.75rem;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.1);padding:6px 10px;white-space:nowrap;}
+.orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:16px;}
+.order-card{background:var(--card);overflow:hidden;transition:all .3s;}
+.order-card.new{border:2px solid var(--yellow);box-shadow:0 0 12px rgba(255,214,0,.15);}
+.order-card.in_progress{border:2px solid var(--orange);box-shadow:0 0 12px rgba(255,107,0,.15);}
+.order-card.ready{border:2px solid var(--green);box-shadow:0 0 12px rgba(0,170,68,.15);}
+.order-header{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
+.order-header.new{background:rgba(255,214,0,.1);}
+.order-header.in_progress{background:rgba(255,107,0,.1);}
+.order-header.ready{background:rgba(0,170,68,.1);}
+.order-id{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--yellow);letter-spacing:2px;}
+.table-badge{font-size:.78rem;font-weight:700;color:var(--gray);}
+.order-time{font-size:.7rem;color:var(--gray);}
+.status-badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:2px;}
+.status-new{background:var(--yellow);color:var(--black);}
+.status-in_progress{background:var(--orange);color:#fff;}
+.status-ready{background:var(--green);color:#fff;}
+.order-items{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.kitchen-item{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.88rem;}
+.kitchen-item:last-child{border:none;}
+.item-qty{display:inline-block;background:var(--yellow);color:var(--black);font-weight:900;font-size:.78rem;padding:1px 7px;margin-left:6px;}
+.item-tops{color:var(--orange);font-size:.76rem;margin-top:2px;}
+.item-note{color:var(--gray);font-size:.72rem;font-style:italic;}
+.order-notes{padding:6px 14px;background:rgba(255,107,0,.08);border-right:2px solid var(--orange);color:var(--orange);font-size:.78rem;}
+.order-actions{padding:10px 14px;display:flex;gap:6px;flex-wrap:wrap;}
+.order-footer{padding:8px 14px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.3);border-top:1px solid rgba(255,255,255,.05);}
+.total-badge{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--yellow);}
+.pay-btn{padding:8px 16px;border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:900;font-size:.82rem;border-radius:2px;transition:all .2s;min-height:40px;}
+.pay-btn.unpaid{background:rgba(255,255,255,.08);color:var(--gray);border:1px solid rgba(255,255,255,.1);}
+.pay-btn.paid{background:var(--green);color:#fff;}
+.action-btn{flex:1;border:none;padding:12px 8px;font-family:'Cairo',sans-serif;font-weight:900;font-size:.85rem;cursor:pointer;transition:all .15s;border-radius:2px;min-height:46px;touch-action:manipulation;}
+.btn-start{background:var(--orange);color:#fff;}
+.btn-ready{background:var(--green);color:#fff;}
+.btn-cancel{background:rgba(204,34,0,.3);color:#ff8888;border:1px solid rgba(204,34,0,.3);}
+.empty-kitchen{text-align:center;padding:80px 20px;color:var(--gray);}
+.ping-new{animation:ping-anim .8s ease-in-out 3;}
+@keyframes ping-anim{0%,100%{box-shadow:0 0 12px rgba(255,214,0,.15);}50%{box-shadow:0 0 30px rgba(255,214,0,.5);}}
+
+@media(max-width:600px){
+  .kitchen-nav{padding:8px 12px;}
+  .kitchen-title{font-size:1.2rem;letter-spacing:2px;}
+  .nav-left span{font-size:.72rem;padding:3px 8px;}
+  .nav-right a{font-size:.68rem;padding:5px 8px;}
+  #lastUpdate{display:none;}
+  .orders-grid{grid-template-columns:1fr;padding:10px;gap:10px;}
+  .order-id{font-size:1.4rem;}
+  .action-btn{padding:14px 8px;font-size:.9rem;min-height:50px;}
+  .pay-btn{padding:10px 14px;min-height:44px;font-size:.85rem;}
+  .kitchen-item{font-size:.9rem;padding:9px 0;}
+  .item-qty{font-size:.82rem;padding:2px 8px;}
+}
+</style>
+</head>
+<body>
+<div class="kitchen-nav">
+  <div class="nav-left">
+    <div class="kitchen-title">🔥 LOCO — المطبخ</div>
+    <span style="color:var(--yellow);font-size:.8rem;font-weight:700;background:rgba(255,214,0,.1);padding:4px 12px;">{{ orders|length }} طلب نشط</span>
+  </div>
+  <div class="nav-right">
+    <span style="color:var(--gray);font-size:.72rem;" id="lastUpdate"></span>
+    {% if user.is_superuser or user.profile.role == 'owner' %}
+      <a href="/dashboard/orders/">📋 الطلبات</a>
+      <a href="/dashboard/">📊 لوحة التحكم</a>
+    {% else %}
+      <a href="/kitchen/orders/">📋 الطلبات</a>
+    {% endif %}
+    <a href="/">🏠 الموقع</a>
+    <a href="/accounts/logout/" style="color:var(--red);border-color:rgba(204,34,0,.3);">خروج</a>
+  </div>
+</div>
+
+{% if orders %}
+<div class="orders-grid">
+  {% for order in orders %}
+  <div class="order-card {{ order.status }} {% if order.status == 'new' %}ping-new{% endif %}" id="card-{{ order.id }}">
+
+    <!-- Header -->
+    <div class="order-header {{ order.status }}">
+      <div>
+        <div class="order-id">#{{ order.id }}</div>
+        <div class="table-badge">
+          {% if order.table %}🪑 طاولة {{ order.table.number }}{% else %}🏪 كاشير{% endif %}
+        </div>
+      </div>
+      <div style="text-align:left;">
+        {% if order.status == 'new' %}<span class="status-badge status-new">🆕 جديد</span>
+        {% elif order.status == 'in_progress' %}<span class="status-badge status-in_progress">👨‍🍳 تحضير</span>
+        {% elif order.status == 'ready' %}<span class="status-badge status-ready">✅ جاهز</span>
+        {% endif %}
+        <div class="order-time" style="margin-top:4px;">{{ order.created_at|time:"H:i" }}</div>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="order-items">
+      {% for item in order.items.all %}
+      <div class="kitchen-item">
+        <span class="item-qty">×{{ item.quantity }}{% if item.weight_grams %} {{ item.weight_grams }}g{% endif %}</span>
+        <strong>{{ item.menu_item.name_ar }}</strong>
+        {% if item.toppings.all %}
+        <div class="item-tops">+ {% for t in item.toppings.all %}{{ t.name_ar }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+        {% endif %}
+        {% if item.notes %}<div class="item-note">{{ item.notes }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Order notes -->
+    {% if order.notes %}
+    <div class="order-notes">📝 {{ order.notes }}</div>
+    {% endif %}
+
+    <!-- Footer: total + payment -->
+    <div class="order-footer">
+      <div class="total-badge">₪{{ order.total_price }}</div>
+      <button class="pay-btn {% if order.payment_status == 'paid' %}paid{% else %}unpaid{% endif %}"
+              id="pay-btn-{{ order.id }}"
+              onclick="togglePayment({{ order.id }}, this)">
+        {% if order.payment_status == 'paid' %}✅ مدفوع{% else %}💵 لم يُدفع{% endif %}
+      </button>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="order-actions">
+      {% if order.status == 'new' %}
+        <button class="action-btn btn-start" onclick="updateStatus({{ order.id }}, 'in_progress')">👨‍🍳 بدأ التحضير</button>
+      {% elif order.status == 'in_progress' %}
+        <button class="action-btn btn-ready" onclick="updateStatus({{ order.id }}, 'ready')">✅ جاهز للاستلام</button>
+      {% elif order.status == 'ready' %}
+        <button class="action-btn btn-ready" style="opacity:.5;cursor:default;">✅ جاهز — انتظار الدفع</button>
+      {% endif %}
+      <button class="action-btn btn-cancel" onclick="updateStatus({{ order.id }}, 'cancelled')">إلغاء</button>
+    </div>
+
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-kitchen">
+  <div style="font-size:3rem;margin-bottom:12px;">✅</div>
+  <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;">لا توجد طلبات نشطة</div>
+  <div style="font-size:.85rem;">الصفحة تتحدث كل 5 ثوانٍ</div>
+</div>
+{% endif %}
+
+<script>
+async function updateStatus(id, status) {
+  const r = await fetch(`/kitchen/update/${id}/`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded', 'X-CSRFToken': getCookie('csrftoken')},
+    body: `status=${status}`
+  });
+  const d = await r.json();
+  if (d.success) {
+    // If done, remove card
+    if (d.status === 'done') {
+      const card = document.getElementById(`card-${id}`);
+      if (card) card.style.opacity = '0';
+      setTimeout(() => { if(card) card.remove(); }, 600);
+    } else {
+      location.reload();
+    }
+  }
+}
+
+async function togglePayment(id, btn) {
+  const isPaid = btn.classList.contains('paid');
+  const newPayment = isPaid ? 'pending' : 'paid';
+  const r = await fetch(`/kitchen/update/${id}/`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded', 'X-CSRFToken': getCookie('csrftoken')},
+    body: `payment_status=${newPayment}`
+  });
+  const d = await r.json();
+  if (d.success) {
+    if (d.status === 'done') {
+      // Order complete — remove card
+      const card = document.getElementById(`card-${id}`);
+      if (card) { card.style.opacity='0'; setTimeout(()=>card.remove(), 600); }
+    } else {
+      // Update button
+      if (newPayment === 'paid') {
+        btn.classList.replace('unpaid','paid');
+        btn.textContent = '✅ مدفوع';
+      } else {
+        btn.classList.replace('paid','unpaid');
+        btn.textContent = '💵 لم يُدفع';
+      }
+    }
+  }
+}
+
+function getCookie(n) {
+  const v = document.cookie.match('(^|;)\s*'+n+'\s*=\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
+// Auto-refresh every 5 seconds
+setInterval(() => location.reload(), 5000);
+document.getElementById('lastUpdate').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar');
+</script>
+</body>
+</html>

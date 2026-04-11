@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}لوحة التحكم — LOCO{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0a0a0a;--deep:#111;--card:#161616;--card2:#1c1c1c;--yellow:#FFD600;--orange:#FF6B00;--red:#CC2200;--white:#F5F0E8;--gray:#888;--green:#00aa44;--border:rgba(255,214,0,0.1);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--white);font-family:'Cairo',sans-serif;min-height:100vh;display:flex;}
+a{color:var(--yellow);text-decoration:none;}
+/* Sidebar */
+.sidebar{width:230px;background:var(--deep);border-left:1px solid var(--border);flex-shrink:0;position:fixed;top:0;right:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:50;}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
+.sidebar-logo-text{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--yellow);letter-spacing:3px;}
+.sidebar-sub{font-size:.68rem;color:var(--gray);letter-spacing:1px;margin-top:2px;}
+.nav-section{padding:10px 18px 4px;font-size:.62rem;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:3px;text-transform:uppercase;margin-top:6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:rgba(245,240,232,.55);font-size:.82rem;font-weight:700;transition:all .15s;border-right:3px solid transparent;text-decoration:none;}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.03);}
+.nav-item.active{color:var(--yellow);background:rgba(255,214,0,.06);border-right-color:var(--yellow);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);margin-top:auto;}
+.user-info{font-size:.75rem;color:var(--gray);margin-bottom:8px;}
+.user-role{display:inline-block;background:rgba(255,214,0,.1);color:var(--yellow);font-size:.65rem;padding:2px 8px;font-weight:700;letter-spacing:1px;}
+/* Main */
+.main{margin-right:230px;flex:1;min-width:0;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:var(--deep);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:40;}
+.page-title-bar{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--yellow);letter-spacing:2px;}
+.content{padding:24px;flex:1;}
+/* Components */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:900;font-size:.82rem;letter-spacing:.5px;transition:all .15s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);text-decoration:none;}
+.btn-yellow{background:var(--yellow);color:var(--black);}
+.btn-yellow:hover{background:var(--orange);color:#fff;}
+.btn-outline{background:transparent;color:var(--yellow);border:1.5px solid var(--yellow);}
+.btn-outline:hover{background:var(--yellow);color:var(--black);}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:#aa1800;}
+.btn-sm{padding:5px 12px;font-size:.75rem;}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--white);border:1px solid rgba(255,255,255,.08);}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+.card{background:var(--card);border:1px solid var(--border);padding:20px;}
+.card-title{font-size:.72rem;font-weight:700;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
+.stat{background:var(--card);border:1px solid var(--border);padding:18px 20px;}
+.stat-label{font-size:.68rem;font-weight:700;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--yellow);line-height:1;}
+.stat-sub{font-size:.72rem;color:var(--gray);margin-top:3px;}
+.stat-green .stat-val{color:var(--green);}
+.stat-orange .stat-val{color:var(--orange);}
+/* Table */
+.table-wrap{overflow-x:auto;}
+table.dt{width:100%;border-collapse:collapse;}
+table.dt th{text-align:right;padding:10px 14px;font-size:.68rem;font-weight:700;color:var(--gray);letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);white-space:nowrap;}
+table.dt td{padding:11px 14px;font-size:.83rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
+table.dt tr:last-child td{border-bottom:none;}
+table.dt tr:hover td{background:rgba(255,214,0,.025);}
+/* Form */
+.form-wrap{max-width:640px;}
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-size:.72rem;font-weight:700;color:var(--gray);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;}
+.form-input,.form-select,.form-textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--white);padding:11px 14px;font-family:'Cairo',sans-serif;font-size:.9rem;transition:border-color .2s;border-radius:1px;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--yellow);}
+.form-select{background-color:#1a1a1a;}
+.form-textarea{resize:vertical;min-height:90px;}
+.form-check{display:flex;align-items:center;gap:10px;padding:10px 0;}
+.form-check input{accent-color:var(--yellow);width:16px;height:16px;}
+.form-check label{font-size:.85rem;color:var(--white);cursor:pointer;}
+.form-error{color:#ff7777;font-size:.75rem;margin-top:4px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+/* Badge */
+.badge{display:inline-block;padding:2px 10px;font-size:.68rem;font-weight:700;letter-spacing:.5px;border-radius:1px;}
+.badge-new{background:var(--yellow);color:var(--black);}
+.badge-in_progress{background:var(--orange);color:#fff;}
+.badge-ready{background:var(--green);color:#fff;}
+.badge-done{background:#333;color:#aaa;}
+.badge-cancelled{background:var(--red);color:#fff;}
+.badge-paid{background:var(--green);color:#fff;}
+.badge-pending{background:#555;color:#ccc;}
+/* Alert */
+.alert{padding:12px 16px;font-size:.83rem;margin-bottom:16px;border-right:3px solid;}
+.alert-success{background:rgba(0,170,68,.1);border-color:var(--green);color:#88ffaa;}
+.alert-error{background:rgba(204,34,0,.1);border-color:var(--red);color:#ffaaaa;}
+/* Toggle switch */
+.toggle{position:relative;display:inline-block;width:44px;height:24px;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#333;cursor:pointer;transition:.3s;border-radius:24px;}
+.toggle-slider::before{content:'';position:absolute;height:18px;width:18px;right:3px;bottom:3px;background:#888;transition:.3s;border-radius:50%;}
+.toggle input:checked + .toggle-slider{background:var(--yellow);}
+.toggle input:checked + .toggle-slider::before{background:var(--black);transform:translateX(-20px);}
+/* Page header */
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.page-head-title{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:var(--yellow);letter-spacing:2px;}
+.page-head-actions{display:flex;gap:10px;align-items:center;}
+/* Pagination / filter bar */
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;}
+.filter-bar select,.filter-bar input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--white);padding:8px 12px;font-family:'Cairo',sans-serif;font-size:.82rem;}
+/* Toppings checklist in item form */
+.toppings-check{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:6px;}
+.toppings-check label{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:.82rem;cursor:pointer;transition:border-color .2s;}
+.toppings-check label:hover{border-color:var(--yellow);}
+.toppings-check input{accent-color:var(--yellow);}
+/* Image preview */
+.img-preview{width:100px;height:100px;object-fit:cover;border:1px solid var(--border);display:block;margin-top:8px;}
+@media(max-width:900px){.sidebar{width:200px;}.main{margin-right:200px;}}
+@media(max-width:700px){.sidebar{display:none;}.main{margin-right:0;}.form-row{grid-template-columns:1fr;}}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-text">🔥 LOCO</div>
+    <div class="sidebar-sub">أبو شادي · لوحة التحكم</div>
+  </div>
+  <nav style="flex:1;overflow-y:auto;">
+    <div class="nav-section">الرئيسية</div>
+    <a class="nav-item {% block nav_overview %}{% endblock %}" href="/dashboard/"><span class="icon">📊</span>نظرة عامة</a>
+
+    <div class="nav-section">الطلبات</div>
+    <a class="nav-item {% block nav_orders %}{% endblock %}" href="/dashboard/orders/"><span class="icon">📋</span>الطلبات</a>
+    <a class="nav-item" href="/kitchen/"><span class="icon">👨‍🍳</span>شاشة المطبخ</a>
+
+    <div class="nav-section">القائمة</div>
+    <a class="nav-item {% block nav_menu %}{% endblock %}" href="/dashboard/menu/"><span class="icon">🍞</span>الأصناف</a>
+    <a class="nav-item {% block nav_cats %}{% endblock %}" href="/dashboard/menu/category/"><span class="icon">📂</span>الفئات</a>
+    <a class="nav-item {% block nav_tops %}{% endblock %}" href="/dashboard/menu/topping/"><span class="icon">🥗</span>الإضافات</a>
+
+    <div class="nav-section">المطعم</div>
+    <a class="nav-item {% block nav_tables %}{% endblock %}" href="/dashboard/tables/"><span class="icon">🪑</span>الطاولات & QR</a>
+    <a class="nav-item {% block nav_reports %}{% endblock %}" href="/dashboard/reports/"><span class="icon">📈</span>التقارير</a>
+    <a class="nav-item {% block nav_settings %}{% endblock %}" href="/dashboard/settings/"><span class="icon">⚙️</span>الإعدادات</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">{{ request.user.username }}</div>
+    <div class="user-role">{% if request.user.is_superuser %}SUPER{% else %}{{ request.user.profile.role|upper }}{% endif %}</div>
+    <a href="/accounts/logout/" class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%;justify-content:center;">خروج</a>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div class="page-title-bar">{% block topbar_title %}{% endblock %}</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="/" style="color:var(--gray);font-size:.8rem;">← الموقع</a>
+    </div>
+  </div>
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

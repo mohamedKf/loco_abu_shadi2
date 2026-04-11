@@ -1,0 +1,35 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}QR — طاولة {{ table.number }}{% endblock %}
+{% block nav_tables %}active{% endblock %}
+{% block topbar_title %}QR Code — طاولة {{ table.number }}{% endblock %}
+{% block extra_css %}
+<style>
+@media print {
+  .sidebar, .topbar, .no-print { display:none !important; }
+  .main { margin-right:0 !important; }
+  .qr-print-card { border:none !important; box-shadow:none !important; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header no-print">
+  <div class="page-head-title">QR Code — طاولة {{ table.number }}</div>
+  <a href="/dashboard/tables/" class="btn btn-outline btn-sm no-print">← رجوع</a>
+</div>
+<div style="max-width:400px;margin:0 auto;text-align:center;">
+  <div class="qr-print-card" style="background:var(--card);border:1px solid rgba(255,214,0,.15);padding:32px;margin-bottom:20px;">
+    <!-- QR Code with yellow background -->
+    <div style="background:#FFD600;padding:16px;display:inline-block;margin-bottom:20px;border-radius:4px;">
+      <img src="{{ qr_img }}" style="width:200px;height:200px;display:block;" alt="QR Table {{ table.number }}">
+    </div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--yellow);letter-spacing:3px;">LOCO</div>
+    <div style="font-size:1rem;color:var(--white);font-weight:700;margin-top:4px;">أبو شادي</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gray);letter-spacing:2px;margin-top:8px;">طاولة {{ table.number }}</div>
+    <div style="font-size:.75rem;color:var(--gray);margin-top:8px;">امسح الكود لتبدأ طلبك</div>
+  </div>
+  <div class="no-print" style="display:flex;gap:10px;justify-content:center;">
+    <button onclick="window.print()" class="btn btn-yellow" style="padding:12px 28px;">🖨️ طباعة</button>
+    <a href="/dashboard/tables/" class="btn btn-outline" style="padding:12px 24px;">رجوع</a>
+  </div>
+</div>
+{% endblock %}

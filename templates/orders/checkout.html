@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}إتمام الطلب{% endblock %}
+{% block extra_css %}
+<style>
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:rgba(10,10,10,.96);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,214,0,.1);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--yellow);letter-spacing:3px;text-decoration:none;}
+.page-wrap{max-width:600px;margin:0 auto;padding:76px 16px 40px;}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--yellow);letter-spacing:2px;}
+.section-label{font-size:.72rem;font-weight:700;color:var(--gray);letter-spacing:2px;margin-bottom:10px;display:block;text-transform:uppercase;}
+.form-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--white);padding:12px 14px;font-family:'Cairo',sans-serif;font-size:.95rem;margin-bottom:12px;transition:border-color .2s;}
+.form-input:focus{outline:none;border-color:var(--yellow);}
+.payment-options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px;}
+.pay-option{background:var(--card);border:2px solid rgba(255,255,255,.08);padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;}
+.pay-option.selected{border-color:var(--yellow);background:rgba(255,214,0,.08);}
+.pay-icon{font-size:1.8rem;display:block;margin-bottom:6px;}
+.pay-label{font-size:.78rem;font-weight:700;color:var(--gray);}
+.pay-option.selected .pay-label{color:var(--yellow);}
+.order-summary{background:var(--card);border:1px solid rgba(255,214,0,.1);padding:16px;margin-bottom:20px;}
+.summary-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.85rem;}
+.summary-total{display:flex;justify-content:space-between;padding:10px 0 0;font-weight:900;font-size:1rem;color:var(--yellow);}
+.location-badge{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.2);margin-bottom:20px;}
+.location-icon{font-size:1.5rem;}
+.location-text{font-size:.85rem;font-weight:700;color:var(--yellow);}
+.location-sub{font-size:.75rem;color:var(--gray);margin-top:2px;}
+@media(max-width:400px){.payment-options{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+{% block body %}
+<nav>
+  <a href="/" class="nav-logo">LOCO</a>
+  {% if table_number %}
+  <span style="color:var(--gray);font-size:.8rem;font-weight:700;">طاولة {{ table_number }}</span>
+  {% else %}
+  <span style="color:var(--gray);font-size:.8rem;">كاشير</span>
+  {% endif %}
+</nav>
+
+<div class="page-wrap">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <a href="/orders/cart/" class="btn btn-outline" style="padding:8px 16px;font-size:.85rem;">← رجوع</a>
+    <div class="page-title">إتمام الطلب</div>
+  </div>
+
+  <!-- Location indicator -->
+  {% if table %}
+  <div class="location-badge">
+    <span class="location-icon">🪑</span>
+    <div>
+      <div class="location-text">طاولة رقم {{ table.number }}</div>
+      <div class="location-sub">سيتم توصيل الطلب لطاولتك</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="location-badge">
+    <span class="location-icon">🏪</span>
+    <div>
+      <div class="location-text">طلب عند الكاشير</div>
+      <div class="location-sub">استلم طلبك من الكاونتر</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Order summary -->
+  <div class="order-summary">
+    <div style="font-size:.72rem;font-weight:700;color:var(--gray);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;">ملخص الطلب</div>
+    {% for ci in cart_items %}
+    <div class="summary-item">
+      <span>
+        {{ ci.item.name_ar }} × {{ ci.quantity }}
+        {% if ci.toppings %}
+        <span style="color:var(--orange);font-size:.78rem;">
+          (+ {% for t in ci.toppings %}{{ t.name_ar }}{% if not forloop.last %}, {% endif %}{% endfor %})
+        </span>
+        {% endif %}
+      </span>
+      <span style="color:var(--yellow);">₪{{ ci.subtotal }}</span>
+    </div>
+    {% endfor %}
+    <div class="summary-total">
+      <span>المجموع</span>
+      <span>₪{{ total }}</span>
+    </div>
+  </div>
+
+  <form method="POST" action="/orders/confirm/">
+    {% csrf_token %}
+    <input type="hidden" name="payment_method" id="paymentInput" value="cash">
+
+    <!-- Payment -->
+    <div style="margin-bottom:20px;">
+      <span class="section-label">طريقة الدفع</span>
+      <div class="payment-options">
+        <div class="pay-option selected" onclick="selectPay('cash',this)">
+          <span class="pay-icon">💵</span>
+          <div class="pay-label">كاش</div>
+        </div>
+        <div class="pay-option" onclick="selectPay('cashier_card',this)">
+          <span class="pay-icon">💳</span>
+          <div class="pay-label">بطاقة كاشير</div>
+        </div>
+        <div class="pay-option" onclick="selectPay('online',this)">
+          <span class="pay-icon">📱</span>
+          <div class="pay-label">اونلاين</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer info -->
+    <div style="margin-bottom:20px;">
+      <span class="section-label">بياناتك — اختياري</span>
+      <input class="form-input" type="text" name="customer_name"  placeholder="اسمك">
+      <input class="form-input" type="tel"  name="customer_phone" placeholder="رقم الجوال (للإشعار عند الجاهزية)">
+    </div>
+
+    <!-- Notes -->
+    <div style="margin-bottom:20px;">
+      <span class="section-label">ملاحظات للمطبخ</span>
+      <textarea class="form-input" name="notes" rows="2" placeholder="أي طلبات خاصة..."></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-yellow" style="width:100%;font-size:1rem;padding:14px;">
+      🔥 تأكيد الطلب
+    </button>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function selectPay(val, el) {
+  document.querySelectorAll('.pay-option').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('paymentInput').value = val;
+}
+</script>
+{% endblock %}

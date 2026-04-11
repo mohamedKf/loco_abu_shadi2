@@ -1,0 +1,548 @@
+[
+  {
+    "model": "menu.category",
+    "pk": 1,
+    "fields": {
+      "name": "Jabata",
+      "name_ar": "جابتا",
+      "name_he": "ג'אבטה",
+      "sort_order": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "menu.category",
+    "pk": 2,
+    "fields": {
+      "name": "Baguette",
+      "name_ar": "باجيت",
+      "name_he": "באגט",
+      "sort_order": 2,
+      "is_active": true
+    }
+  },
+  {
+    "model": "menu.category",
+    "pk": 3,
+    "fields": {
+      "name": "Toast & More",
+      "name_ar": "توست وأكثر",
+      "name_he": "טוסט ועוד",
+      "sort_order": 3,
+      "is_active": true
+    }
+  },
+  {
+    "model": "menu.category",
+    "pk": 4,
+    "fields": {
+      "name": "Premium Mortadella",
+      "name_ar": "مرتديلا فاخرة",
+      "name_he": "מרטדלה פרימיום",
+      "sort_order": 4,
+      "is_active": true
+    }
+  },
+  {
+    "model": "menu.category",
+    "pk": 5,
+    "fields": {
+      "name": "Protein",
+      "name_ar": "بروتين",
+      "name_he": "פרוטאין",
+      "sort_order": 5,
+      "is_active": true
+    }
+  },
+  {
+    "model": "menu.category",
+    "pk": 6,
+    "fields": {
+      "name": "Drinks",
+      "name_ar": "مشروبات",
+      "name_he": "שתייה",
+      "sort_order": 6,
+      "is_active": true
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 1,
+    "fields": {
+      "category": 1,
+      "name": "Jabata Chicken",
+      "name_ar": "جابتا جاج",
+      "name_he": "ג'אבטה עוף",
+      "price": "60",
+      "image": "",
+      "is_available": true,
+      "sort_order": 1,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 2,
+    "fields": {
+      "category": 1,
+      "name": "Jabata Veal",
+      "name_ar": "جابتا عجل",
+      "name_he": "ג'אבטה עגל",
+      "price": "65",
+      "image": "",
+      "is_available": true,
+      "sort_order": 2,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 3,
+    "fields": {
+      "category": 1,
+      "name": "Jabata Schnitzel",
+      "name_ar": "جابتا شنيتسل",
+      "name_he": "ג'אבטה שניצל",
+      "price": "60",
+      "image": "",
+      "is_available": true,
+      "sort_order": 3,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 4,
+    "fields": {
+      "category": 1,
+      "name": "Jabata Salsiccia",
+      "name_ar": "جابتا صلاصيصو",
+      "name_he": "ג'אבטה סלסיצ'ו",
+      "price": "60",
+      "image": "",
+      "is_available": true,
+      "sort_order": 4,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 5,
+    "fields": {
+      "category": 1,
+      "name": "Jabata Mix Veal+Sals",
+      "name_ar": "جابتا مكس عجل وصلاصيو",
+      "name_he": "ג'אבטה מיקס עגל+סלסיצ'ו",
+      "price": "70",
+      "image": "",
+      "is_available": true,
+      "sort_order": 5,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 6,
+    "fields": {
+      "category": 1,
+      "name": "Jabata Crispy",
+      "name_ar": "جابتا كرسبي",
+      "name_he": "ג'אבטה קריספי",
+      "price": "60",
+      "image": "",
+      "is_available": true,
+      "sort_order": 6,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 7,
+    "fields": {
+      "category": 2,
+      "name": "Baguette Chicken",
+      "name_ar": "باجيت جاج",
+      "name_he": "באגט עוף",
+      "price": "50",
+      "image": "",
+      "is_available": true,
+      "sort_order": 7,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 8,
+    "fields": {
+      "category": 2,
+      "name": "Baguette Schnitzel",
+      "name_ar": "باجيت شنيتسل",
+      "name_he": "באגט שניצל",
+      "price": "50",
+      "image": "",
+      "is_available": true,
+      "sort_order": 8,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 9,
+    "fields": {
+      "category": 2,
+      "name": "Baguette Veal",
+      "name_ar": "باجيت عجل",
+      "name_he": "באגט עגל",
+      "price": "60",
+      "image": "",
+      "is_available": true,
+      "sort_order": 9,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 10,
+    "fields": {
+      "category": 2,
+      "name": "Baguette Sals+Veal",
+      "name_ar": "باجيت صلاصيصو وعجل",
+      "name_he": "באגט סלסיצ'ו+עגל",
+      "price": "65",
+      "image": "",
+      "is_available": true,
+      "sort_order": 10,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 11,
+    "fields": {
+      "category": 2,
+      "name": "Baguette Crispy",
+      "name_ar": "باجيت كرسبي",
+      "name_he": "באגט קריספי",
+      "price": "50",
+      "image": "",
+      "is_available": true,
+      "sort_order": 11,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 12,
+    "fields": {
+      "category": 3,
+      "name": "Toast Cheese",
+      "name_ar": "توست أجبان",
+      "name_he": "טוסט גבינות",
+      "price": "30",
+      "image": "",
+      "is_available": true,
+      "sort_order": 12,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 13,
+    "fields": {
+      "category": 3,
+      "name": "Toast Halloumi",
+      "name_ar": "توست حلومي",
+      "name_he": "טוסט חלומי",
+      "price": "35",
+      "image": "",
+      "is_available": true,
+      "sort_order": 13,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 14,
+    "fields": {
+      "category": 3,
+      "name": "Toast Mortadella",
+      "name_ar": "توست مرتدلات",
+      "name_he": "טוסט מרטדלה",
+      "price": "35",
+      "image": "",
+      "is_available": true,
+      "sort_order": 14,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 15,
+    "fields": {
+      "category": 3,
+      "name": "Tuna",
+      "name_ar": "طونه",
+      "name_he": "טונה",
+      "price": "25",
+      "image": "",
+      "is_available": true,
+      "sort_order": 15,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 16,
+    "fields": {
+      "category": 3,
+      "name": "Hot Dog",
+      "name_ar": "هوت دوج",
+      "name_he": "הוט דוג",
+      "price": "25",
+      "image": "",
+      "is_available": true,
+      "sort_order": 16,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 17,
+    "fields": {
+      "category": 3,
+      "name": "Hot Dog Small",
+      "name_ar": "هوت دوج صغير",
+      "name_he": "הוט דוג קטן",
+      "price": "20",
+      "image": "",
+      "is_available": true,
+      "sort_order": 17,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 18,
+    "fields": {
+      "category": 5,
+      "name": "Chicken Breast Protein",
+      "name_ar": "صدر جاج بروتين",
+      "name_he": "חזה עוף פרוטאין",
+      "price": "60",
+      "image": "",
+      "is_available": true,
+      "sort_order": 18,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 19,
+    "fields": {
+      "category": 5,
+      "name": "Asado",
+      "name_ar": "أسادو",
+      "name_he": "אסאדו",
+      "price": "70",
+      "image": "",
+      "is_available": true,
+      "sort_order": 19,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 20,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Brooklyn",
+      "name_ar": "مرتديلا بركلن",
+      "name_he": "מרטדלה ברוקלין",
+      "price": "45",
+      "image": "",
+      "is_available": true,
+      "sort_order": 20,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 21,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella New York",
+      "name_ar": "مرتديلا نيويورك",
+      "name_he": "מרטדלה ניו יורק",
+      "price": "45",
+      "image": "",
+      "is_available": true,
+      "sort_order": 21,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 22,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Brisket",
+      "name_ar": "مرتديلا بريسكت",
+      "name_he": "מרטדלה בריסקט",
+      "price": "45",
+      "image": "",
+      "is_available": true,
+      "sort_order": 22,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 23,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Asado",
+      "name_ar": "مرتديلا أسادو",
+      "name_he": "מרטדלה אסאדו",
+      "price": "45",
+      "image": "",
+      "is_available": true,
+      "sort_order": 23,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 24,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Beef Ruben",
+      "name_ar": "مرتديلا بيف روبين",
+      "name_he": "מרטדלה ביף רובין",
+      "price": "45",
+      "image": "",
+      "is_available": true,
+      "sort_order": 24,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 25,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Goose",
+      "name_ar": "مرتديلا وز",
+      "name_he": "מרטדלה אווז",
+      "price": "35",
+      "image": "",
+      "is_available": true,
+      "sort_order": 25,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 26,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Shoulder",
+      "name_ar": "مرتديلا كتف بقر",
+      "name_he": "מרטדלה כתף בקר",
+      "price": "35",
+      "image": "",
+      "is_available": true,
+      "sort_order": 26,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 27,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Shoulder Pep",
+      "name_ar": "مرتديلا كتف بقر فلفل",
+      "name_he": "מרטדלה כתף בקר פלפל",
+      "price": "35",
+      "image": "",
+      "is_available": true,
+      "sort_order": 27,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 28,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Shoulder Smk",
+      "name_ar": "مرتديلا كتف بقر مدخن",
+      "name_he": "מרטדלה כתף בקר מעושן",
+      "price": "35",
+      "image": "",
+      "is_available": true,
+      "sort_order": 28,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 29,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Salami Pep",
+      "name_ar": "مرتديلا سلامه فلفل",
+      "name_he": "מרטדלה סלמה פלפל",
+      "price": "30",
+      "image": "",
+      "is_available": true,
+      "sort_order": 29,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 30,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Salami Plain",
+      "name_ar": "مرتديلا سلامه عادي",
+      "name_he": "מרטדלה סלמה רגיל",
+      "price": "30",
+      "image": "",
+      "is_available": true,
+      "sort_order": 30,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 31,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Turkey BBQ",
+      "name_ar": "مرتديلا حبش بربوكيو",
+      "name_he": "מרטדלה הודו ברביקיו",
+      "price": "30",
+      "image": "",
+      "is_available": true,
+      "sort_order": 31,
+      "toppings": []
+    }
+  },
+  {
+    "model": "menu.menuitem",
+    "pk": 32,
+    "fields": {
+      "category": 4,
+      "name": "Mortadella Honey",
+      "name_ar": "مرتديلا عسل",
+      "name_he": "מרטדלה דבש",
+      "price": "30",
+      "image": "",
+      "is_available": true,
+      "sort_order": 32,
+      "toppings": []
+    }
+  }
+]

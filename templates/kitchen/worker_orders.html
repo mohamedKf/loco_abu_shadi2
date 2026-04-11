@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الطلبات — LOCO</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{--black:#0a0a0a;--deep:#111;--card:#161616;--yellow:#FFD600;--orange:#FF6B00;--red:#CC2200;--white:#F5F0E8;--gray:#888;--green:#00aa44;}
+body{background:var(--black);color:var(--white);font-family:'Cairo',sans-serif;min-height:100vh;}
+nav{background:var(--deep);border-bottom:2px solid var(--yellow);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.nav-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--yellow);letter-spacing:3px;white-space:nowrap;}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.nav-links a{color:var(--gray);font-size:.75rem;text-decoration:none;border:1px solid rgba(255,255,255,.1);padding:6px 10px;white-space:nowrap;}
+.page-wrap{padding:14px;max-width:900px;margin:0 auto;}
+.badge{display:inline-block;padding:3px 10px;font-size:.72rem;font-weight:700;border-radius:1px;white-space:nowrap;}
+.badge-new{background:var(--yellow);color:var(--black);}
+.badge-in_progress{background:var(--orange);color:#fff;}
+.badge-ready{background:var(--green);color:#fff;}
+.badge-done{background:#333;color:#888;}
+.badge-cancelled{background:var(--red);color:#fff;}
+.badge-paid{background:var(--green);color:#fff;}
+.badge-pending{background:#444;color:#aaa;}
+
+/* Desktop table */
+.table-wrap{background:var(--card);border:1px solid rgba(255,214,0,.08);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:520px;}
+th{text-align:right;padding:10px 14px;font-size:.7rem;font-weight:700;color:var(--gray);letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);}
+td{padding:10px 14px;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.04);}
+tr:hover td{background:rgba(255,214,0,.02);}
+.btn{display:inline-block;padding:5px 14px;background:var(--yellow);color:var(--black);border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:900;font-size:.78rem;text-decoration:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);}
+
+/* Mobile: card layout instead of table */
+@media(max-width:600px){
+  .nav-title{font-size:1.1rem;letter-spacing:2px;}
+  .nav-links a{font-size:.68rem;padding:5px 8px;}
+  .page-wrap{padding:10px;}
+  h2{font-size:1.2rem !important;}
+
+  .table-wrap{background:transparent;border:none;overflow:visible;}
+  table,thead,tbody,th,td,tr{display:block;}
+  thead{display:none;}
+  tr{
+    background:var(--card);
+    border:1px solid rgba(255,214,0,.1);
+    margin-bottom:10px;
+    padding:12px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px 10px;
+    position:relative;
+  }
+  tr:last-child{margin-bottom:0;}
+  td{
+    padding:0;
+    border:none;
+    font-size:.82rem;
+  }
+  /* Order # — full width top */
+  td:nth-child(1){
+    grid-column:1/3;
+    font-family:'Bebas Neue',sans-serif;
+    color:var(--yellow);
+    font-size:1.2rem;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    padding-bottom:8px;
+    margin-bottom:2px;
+  }
+  /* Table */
+  td:nth-child(2){grid-column:1;}
+  /* Amount */
+  td:nth-child(3){grid-column:2;text-align:left;font-family:'Bebas Neue',sans-serif;color:var(--yellow);font-size:1rem;}
+  /* Payment method */
+  td:nth-child(4){grid-column:1;color:var(--gray);font-size:.75rem;}
+  /* Payment status */
+  td:nth-child(5){grid-column:2;text-align:left;}
+  /* Order status */
+  td:nth-child(6){grid-column:1;}
+  /* Time */
+  td:nth-child(7){grid-column:2;text-align:left;color:var(--gray);font-size:.72rem;}
+
+  /* Empty row */
+  tr:has(td[colspan]){
+    display:block;
+    text-align:center;
+    padding:30px;
+  }
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-title">📋 الطلبات</div>
+  <div class="nav-links">
+    <a href="/kitchen/">👨‍🍳 المطبخ</a>
+    <a href="/">🏠 الموقع</a>
+    <a href="/accounts/logout/" style="color:var(--red);border-color:rgba(204,34,0,.3);">خروج</a>
+  </div>
+</nav>
+<div class="page-wrap">
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--yellow);letter-spacing:2px;margin-bottom:16px;">آخر 50 طلب</h2>
+  <div class="table-wrap">
+    <table>
+      <tr><th>#</th><th>الطاولة</th><th>المبلغ</th><th>الدفع</th><th>حالة الدفع</th><th>الحالة</th><th>الوقت</th></tr>
+      {% for order in orders %}
+      <tr>
+        <td style="font-family:'Bebas Neue',sans-serif;color:var(--yellow);font-size:1.1rem;">#{{ order.id }}</td>
+        <td>{% if order.table %}طاولة {{ order.table.number }}{% else %}<span style="color:var(--orange);">🏪 كاشير</span>{% endif %}</td>
+        <td style="font-family:'Bebas Neue',sans-serif;color:var(--yellow);">₪{{ order.total_price }}</td>
+        <td style="color:var(--gray);font-size:.78rem;">{{ order.get_payment_method_display }}</td>
+        <td>{% if order.payment_status == 'paid' %}<span class="badge badge-paid">✅ مدفوع</span>{% else %}<span class="badge badge-pending">⏳ انتظار</span>{% endif %}</td>
+        <td>
+          {% if order.status == 'new' %}<span class="badge badge-new">🆕 جديد</span>
+          {% elif order.status == 'in_progress' %}<span class="badge badge-in_progress">👨‍🍳 تحضير</span>
+          {% elif order.status == 'ready' %}<span class="badge badge-ready">✅ جاهز</span>
+          {% elif order.status == 'done' %}<span class="badge badge-done">🏁 تم</span>
+          {% elif order.status == 'cancelled' %}<span class="badge badge-cancelled">❌ ملغي</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--gray);font-size:.75rem;white-space:nowrap;">{{ order.created_at|date:"d/m H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;color:var(--gray);padding:30px;">لا توجد طلبات</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+</body>
+</html>

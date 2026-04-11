@@ -1,0 +1,16 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}تأكيد الحذف{% endblock %}
+{% block topbar_title %}تأكيد الحذف{% endblock %}
+{% block content %}
+<div style="max-width:420px;margin:60px auto;text-align:center;">
+  <div style="font-size:3.5rem;margin-bottom:16px;">⚠️</div>
+  <div style="font-size:1rem;font-weight:700;margin-bottom:6px;">هل أنت متأكد من حذف {{ type }}؟</div>
+  <div style="color:var(--yellow);font-size:1.1rem;font-weight:700;margin-bottom:24px;">{{ obj }}</div>
+  <div style="color:var(--gray);font-size:.82rem;margin-bottom:24px;">هذا الإجراء لا يمكن التراجع عنه</div>
+  <form method="POST" style="display:flex;gap:10px;justify-content:center;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-red" style="padding:11px 28px;">نعم، احذف</button>
+    <a href="javascript:history.back()" class="btn btn-outline" style="padding:11px 24px;">إلغاء</a>
+  </form>
+</div>
+{% endblock %}

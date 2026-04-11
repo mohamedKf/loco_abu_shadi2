@@ -1,0 +1,59 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}الطلبات{% endblock %}
+{% block nav_orders %}active{% endblock %}
+{% block topbar_title %}📋 الطلبات{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-head-title">الطلبات</div>
+</div>
+<div class="filter-bar">
+  <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;">
+    <select name="status" onchange="this.form.submit()" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--white);padding:8px 12px;font-family:'Cairo',sans-serif;font-size:.82rem;">
+      <option value="">كل الحالات</option>
+      <option value="new"         {% if status_filter == 'new' %}selected{% endif %}>🆕 جديد</option>
+      <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>👨‍🍳 قيد التحضير</option>
+      <option value="ready"       {% if status_filter == 'ready' %}selected{% endif %}>✅ جاهز</option>
+      <option value="done"        {% if status_filter == 'done' %}selected{% endif %}>🏁 تم</option>
+      <option value="cancelled"   {% if status_filter == 'cancelled' %}selected{% endif %}>❌ ملغي</option>
+    </select>
+    <input type="date" name="date" value="{{ request.GET.date }}"
+      style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--white);padding:8px 12px;font-family:'Cairo',sans-serif;font-size:.82rem;"
+      onchange="this.form.submit()">
+    {% if request.GET.status or request.GET.date %}
+    <a href="/dashboard/orders/" class="btn btn-ghost btn-sm">مسح الفلتر ✕</a>
+    {% endif %}
+  </form>
+</div>
+<div class="card" style="padding:0;">
+  <div class="table-wrap">
+    <table class="dt">
+      <tr><th>#</th><th>الطاولة</th><th>العميل</th><th>المبلغ</th><th>الدفع</th><th>حالة الدفع</th><th>الحالة</th><th>الوقت</th><th></th></tr>
+      {% for order in orders %}
+      <tr>
+        <td style="font-family:'Bebas Neue',sans-serif;color:var(--yellow);font-size:1.1rem;">#{{ order.id }}</td>
+        <td>{% if order.table %}طاولة {{ order.table.number }}{% else %}<span style="color:var(--gray);">كاشير</span>{% endif %}</td>
+        <td style="font-size:.78rem;">{{ order.customer_name|default:"—" }}</td>
+        <td style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--yellow);">₪{{ order.total_price }}</td>
+        <td style="font-size:.78rem;color:var(--gray);">{{ order.get_payment_method_display }}</td>
+        <td>
+          {% if order.payment_status == 'paid' %}<span class="badge badge-paid">✅ مدفوع</span>
+          {% else %}<span class="badge badge-pending">⏳ انتظار</span>{% endif %}
+        </td>
+        <td>
+          {% if order.status == 'new' %}<span class="badge badge-new">🆕 جديد</span>
+          {% elif order.status == 'in_progress' %}<span class="badge badge-in_progress">👨‍🍳 تحضير</span>
+          {% elif order.status == 'ready' %}<span class="badge badge-ready">✅ جاهز</span>
+          {% elif order.status == 'done' %}<span class="badge badge-done">🏁 تم</span>
+          {% elif order.status == 'cancelled' %}<span class="badge badge-cancelled">❌ ملغي</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--gray);font-size:.75rem;white-space:nowrap;">{{ order.created_at|date:"d/m H:i" }}</td>
+        <td><a href="/dashboard/orders/{{ order.id }}/" class="btn btn-ghost btn-sm">عرض</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" style="text-align:center;color:var(--gray);padding:30px;">لا توجد طلبات</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

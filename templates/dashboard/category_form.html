@@ -1,0 +1,23 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}تعديل فئة{% endblock %}
+{% block nav_cats %}active{% endblock %}
+{% block topbar_title %}تعديل فئة{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-head-title">تعديل: {{ cat.name_ar }}</div>
+  <a href="/dashboard/menu/category/" class="btn btn-outline btn-sm">← رجوع</a>
+</div>
+<div class="form-wrap">
+  <div class="card">
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group"><label class="form-label">الاسم عربي *</label>{{ form.name_ar }}</div>
+      <div class="form-group"><label class="form-label">الاسم عبري</label>{{ form.name_he }}</div>
+      <div class="form-group"><label class="form-label">الاسم إنجليزي</label>{{ form.name }}</div>
+      <div class="form-group"><label class="form-label">ترتيب العرض</label>{{ form.sort_order }}</div>
+      <div class="form-check">{{ form.is_active }}<label>نشط</label></div>
+      <button type="submit" class="btn btn-yellow" style="margin-top:14px;">💾 حفظ</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
