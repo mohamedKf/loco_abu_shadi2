@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST
 from .models import Order
 
 
+
 def kitchen_required(view_func):
     """Allow kitchen workers, cashiers and owners"""
     @login_required
@@ -70,3 +71,18 @@ def worker_orders(request):
     from django.shortcuts import render
     qs = Order.objects.select_related('table').order_by('-created_at')[:50]
     return render(request, 'kitchen/worker_orders.html', {'orders': qs})
+
+
+@login_required
+def orders_json(request):
+    """
+    Returns current active order IDs as JSON.
+    Used by kitchen display to detect new orders for auto-print.
+    """
+    active_statuses = ['new', 'in_progress', 'ready']
+    order_ids = list(
+        Order.objects.filter(status__in=active_statuses)
+        .values_list('id', flat=True)
+        .order_by('-created_at')
+    )
+    return JsonResponse({'order_ids': order_ids})
