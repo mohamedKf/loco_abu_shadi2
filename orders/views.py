@@ -2,6 +2,7 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 
 from dashboard.views import owner_required
 from menu.models import MenuItem, Topping
@@ -340,3 +341,18 @@ def settings_view(request):
         'saved': saved,
         'error': error,
     })
+
+
+@login_required
+def orders_json(request):
+    """
+    Returns current active order IDs as JSON.
+    Used by kitchen display to detect new orders for auto-print.
+    """
+    active_statuses = ['new', 'in_progress', 'ready']
+    order_ids = list(
+        Order.objects.filter(status__in=active_statuses)
+        .values_list('id', flat=True)
+        .order_by('-created_at')
+    )
+    return JsonResponse({'order_ids': order_ids})

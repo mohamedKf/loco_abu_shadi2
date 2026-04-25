@@ -11,5 +11,5 @@ urlpatterns = [
     path('confirm/',        views.confirm_order, name='confirm'),
     path('status/<int:pk>/',views.order_status,  name='status'),
     path('set-language/',   views.set_language, name='set_language'),
-    path('orders/json/', views.orders_json, name='orders_json'),
+    path('json/', views.orders_json, name='orders_json'),
 ]
