@@ -13,4 +13,4 @@ def scan_qr(request, token):
     request.session['table_number'] = table.number
     request.session['cart']         = {}   # fresh cart
 
-    return redirect('menu:menu_list')
+    return redirect('/')
