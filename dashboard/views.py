@@ -303,9 +303,15 @@ def table_add(request):
 
 @owner_required
 def table_qr(request, pk):
-    table  = get_object_or_404(Table, pk=pk)
-    qr_img = generate_qr(table)
-    return render(request, 'dashboard/table_qr.html', {'table': table, 'qr_img': qr_img})
+    table = get_object_or_404(Table, pk=pk)
+    base_url = request.build_absolute_uri('/').rstrip('/')
+    qr_img = generate_qr(table, base_url)
+    qr_url = f"{base_url}/table/{table.qr_token}/"
+    return render(request, 'dashboard/table_qr.html', {
+        'table': table,
+        'qr_img': qr_img,
+        'qr_url': qr_url,
+    })
 
 
 @owner_required
@@ -350,14 +356,103 @@ def export_csv(request):
     return response
 
 
-
 @owner_required
 def printer_test(request):
     from orders.printing import test_printer
     success = test_printer()
     msg = "✅ الطابعة تعمل بشكل صحيح!" if success else "❌ تعذر الاتصال بالطابعة — تحقق من الإعدادات"
-    return render(request, 'dashboard/settings.html', {'printer_msg': msg})
+
+    from dashboard.models import PrinterConfig, RestaurantConfig
+    printer = PrinterConfig.get()
+    restaurant = RestaurantConfig.get()
+
+    printer_ctx = {
+        'type': printer.printer_type,
+        'host': printer.host,
+        'port': printer.port,
+        'vendor_id': printer.vendor_id,
+        'product_id': printer.product_id,
+        'auto_print': 'yes' if printer.auto_print else 'no',
+    }
+    restaurant_ctx = {
+        'name_ar': restaurant.name_ar,
+        'name_he': restaurant.name_he,
+        'city': restaurant.city,
+        'phone': restaurant.phone,
+    }
+
+    return render(request, 'dashboard/settings.html', {
+        'printer': printer_ctx,
+        'restaurant': restaurant_ctx,
+        'printer_msg': msg,
+    })
+
 
 @owner_required
 def site_settings(request):
-    return render(request, 'dashboard/settings.html')
+    from dashboard.models import PrinterConfig, RestaurantConfig
+
+    printer = PrinterConfig.get()
+    restaurant = RestaurantConfig.get()
+    saved = False
+    error = None
+
+    if request.method == 'POST':
+        section = request.POST.get('section')
+
+        if section == 'printer':
+            ptype = request.POST.get('printer_type', 'none')
+            printer.printer_type = ptype
+            printer.auto_print = request.POST.get('auto_print') == 'yes'
+
+            if ptype == 'network':
+                host = request.POST.get('printer_host', '').strip()
+                port = request.POST.get('printer_port', '9100').strip()
+                if not host:
+                    error = 'يرجى إدخال عنوان IP الطابعة'
+                else:
+                    printer.host = host
+                    printer.port = int(port)
+            elif ptype == 'usb':
+                vid = request.POST.get('printer_vendor_id', '').strip()
+                pid = request.POST.get('printer_product_id', '').strip()
+                if not vid or not pid:
+                    error = 'يرجى إدخال Vendor ID و Product ID'
+                else:
+                    printer.vendor_id = vid
+                    printer.product_id = pid
+
+            if not error:
+                printer.save()
+                saved = True
+
+        elif section == 'restaurant':
+            restaurant.name_ar = request.POST.get('rest_name_ar', '').strip()
+            restaurant.name_he = request.POST.get('rest_name_he', '').strip()
+            restaurant.city = request.POST.get('rest_city', '').strip()
+            restaurant.phone = request.POST.get('rest_phone', '').strip()
+            restaurant.save()
+            saved = True
+
+    # Build context dicts for template
+    printer_ctx = {
+        'type': printer.printer_type,
+        'host': printer.host,
+        'port': printer.port,
+        'vendor_id': printer.vendor_id,
+        'product_id': printer.product_id,
+        'auto_print': 'yes' if printer.auto_print else 'no',
+    }
+    restaurant_ctx = {
+        'name_ar': restaurant.name_ar,
+        'name_he': restaurant.name_he,
+        'city': restaurant.city,
+        'phone': restaurant.phone,
+    }
+
+    return render(request, 'dashboard/settings.html', {
+        'printer': printer_ctx,
+        'restaurant': restaurant_ctx,
+        'saved': saved,
+        'error': error,
+    })

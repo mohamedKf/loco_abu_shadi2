@@ -1,14 +1,8 @@
 """
 Thermal Printer Support — Epson TM-T20 (and compatible)
-========================================================
-Supports USB and LAN connections.
-Uses python-escpos library.
+Supports USB and LAN connections via python-escpos.
 
 Install: pip install python-escpos
-
-Usage:
-    from orders.printing import print_order
-    print_order(order)
 """
 
 import os
@@ -16,22 +10,53 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# ── Printer config — change these to match your setup ──
-PRINTER_TYPE = os.getenv('PRINTER_TYPE', 'usb')   # 'usb' or 'network'
-PRINTER_HOST = os.getenv('PRINTER_HOST', '192.168.1.200')  # LAN IP
-PRINTER_PORT = int(os.getenv('PRINTER_PORT', 9100))
-PRINTER_USB_VENDOR  = int(os.getenv('PRINTER_USB_VENDOR', '0x04b8'), 16)   # Epson
-PRINTER_USB_PRODUCT = int(os.getenv('PRINTER_USB_PRODUCT', '0x0202'), 16)  # TM-T20
+
+def get_printer_config():
+    """Read printer config from database (set via dashboard settings page)."""
+    try:
+        from dashboard.models import PrinterConfig
+        config = PrinterConfig.objects.first()
+        if config:
+            return {
+                'type':       config.printer_type,
+                'host':       config.host,
+                'port':       config.port,
+                'vendor_id':  config.vendor_id,
+                'product_id': config.product_id,
+                'auto_print': config.auto_print,
+            }
+    except Exception:
+        pass
+
+    # Fallback to env vars (for local dev)
+    return {
+        'type':       os.getenv('PRINTER_TYPE', 'none'),
+        'host':       os.getenv('PRINTER_HOST', ''),
+        'port':       int(os.getenv('PRINTER_PORT', 9100)),
+        'vendor_id':  os.getenv('PRINTER_USB_VENDOR', '0x04b8'),
+        'product_id': os.getenv('PRINTER_USB_PRODUCT', '0x0202'),
+        'auto_print': os.getenv('AUTO_PRINT', 'yes'),
+    }
 
 
 def get_printer():
-    """Get printer instance based on config"""
+    """Get printer instance based on saved config."""
+    config = get_printer_config()
+
+    if config['type'] == 'none' or not config['type']:
+        return None
+
     try:
         from escpos.printer import Usb, Network
-        if PRINTER_TYPE == 'network':
-            return Network(PRINTER_HOST, PRINTER_PORT)
-        else:
-            return Usb(PRINTER_USB_VENDOR, PRINTER_USB_PRODUCT)
+        if config['type'] == 'network':
+            if not config['host']:
+                logger.warning("Printer type is network but no host configured")
+                return None
+            return Network(config['host'], int(config['port']))
+        elif config['type'] == 'usb':
+            vendor  = int(config['vendor_id'], 16) if isinstance(config['vendor_id'], str) else config['vendor_id']
+            product = int(config['product_id'], 16) if isinstance(config['product_id'], str) else config['product_id']
+            return Usb(vendor, product)
     except ImportError:
         logger.warning("python-escpos not installed. Run: pip install python-escpos")
         return None
@@ -45,20 +70,24 @@ def print_order(order):
     Print order receipt to thermal printer.
     Called automatically when order is confirmed.
     """
+    config = get_printer_config()
+    if config.get('auto_print') == 'no':
+        return False
+
     p = get_printer()
     if not p:
         logger.warning(f"Printer unavailable — order #{order.id} not printed")
         return False
 
     try:
-        # Header
+        # ── Header ──
         p.set(align='center', bold=True, height=2, width=2)
         p.text("LOCO\n")
         p.set(align='center', bold=False, height=1, width=1)
         p.text("Abu Shadi - Nazareth\n")
         p.text("-" * 32 + "\n")
 
-        # Order info
+        # ── Order info ──
         p.set(align='center', bold=True)
         p.text(f"Order #{order.id}\n")
         p.set(align='center', bold=False)
@@ -68,43 +97,36 @@ def print_order(order):
         else:
             p.text("Cashier Order\n")
 
-        from django.utils import timezone
         dt = order.created_at
         p.text(f"{dt.strftime('%d/%m/%Y  %H:%M')}\n")
         p.text("-" * 32 + "\n")
 
-        # Items
+        # ── Items ──
         p.set(align='right', bold=False)
         for item in order.items.all():
             name = item.menu_item.name_ar if item.menu_item else "-"
             qty  = item.quantity
             sub  = item.get_subtotal()
 
-            # Item line
-            line = f"{name} x{qty}"
+            line      = f"{name} x{qty}"
             price_str = f"NIS {sub}"
-            spaces = 32 - len(line) - len(price_str)
+            spaces    = 32 - len(line) - len(price_str)
             p.text(f"{line}{' ' * max(1, spaces)}{price_str}\n")
 
-            # Toppings
             tops = item.toppings.all()
             if tops:
-                tops_str = "+ " + ", ".join(t.name_ar for t in tops)
-                p.set(align='right', bold=False)
-                p.text(f"  {tops_str}\n")
+                p.text(f"  + {', '.join(t.name_ar for t in tops)}\n")
 
-            # Notes
             if item.notes:
                 p.text(f"  * {item.notes}\n")
 
         p.text("-" * 32 + "\n")
 
-        # Total
+        # ── Total ──
         p.set(align='center', bold=True, height=2, width=2)
         p.text(f"NIS {order.total_price}\n")
         p.set(align='center', bold=False, height=1, width=1)
 
-        # Payment
         payment_map = {
             'cash':         'Cash',
             'cashier_card': 'Card at Cashier',
@@ -112,7 +134,6 @@ def print_order(order):
         }
         p.text(f"{payment_map.get(order.payment_method, order.payment_method)}\n")
 
-        # Customer
         if order.customer_name:
             p.text(f"{order.customer_name}\n")
         if order.notes:
@@ -123,11 +144,8 @@ def print_order(order):
         p.text("Thank you! Beteavon!\n")
         p.set(align='center', bold=False)
         p.text("This is not a tax invoice\n")
-
-        # Cut paper
         p.cut()
 
-        # Mark receipt as printed
         try:
             order.receipt.printed = True
             order.receipt.save(update_fields=['printed'])
@@ -143,18 +161,16 @@ def print_order(order):
 
 
 def test_printer():
-    """Test printer connection — call from Django shell"""
+    """Test printer connection."""
     p = get_printer()
     if not p:
-        print("❌ Printer not found")
         return False
     try:
         p.set(align='center', bold=True)
         p.text("LOCO - Test Print\n")
         p.text("Printer OK!\n")
         p.cut()
-        print("✅ Test print sent!")
         return True
     except Exception as e:
-        print(f"❌ Print failed: {e}")
+        logger.error(f"Test print failed: {e}")
         return False

@@ -3,13 +3,13 @@ import base64
 from io import BytesIO
 
 
-def generate_qr(table, base_url="http://192.168.1.100:8000"):
+def generate_qr(table, base_url):
     """
     Generate QR code for a table.
-    Returns base64 encoded PNG string for embedding in HTML.
-    Change base_url to your local server IP.
+    base_url is passed dynamically from the view using request.build_absolute_uri('/')
+    so it always works on local, Railway, or any custom domain.
     """
-    url = f"{base_url}/table/{table.qr_token}/"
+    url = f"{base_url.rstrip('/')}/table/{table.qr_token}/"
 
     qr = qrcode.QRCode(
         version=1,
@@ -30,5 +30,5 @@ def generate_qr(table, base_url="http://192.168.1.100:8000"):
     return f"data:image/png;base64,{img_b64}"
 
 
-def get_qr_url(table, base_url="http://192.168.1.100:8000"):
-    return f"{base_url}/table/{table.qr_token}/"
+def get_qr_url(table, base_url):
+    return f"{base_url.rstrip('/')}/table/{table.qr_token}/"

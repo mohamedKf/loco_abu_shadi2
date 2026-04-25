@@ -3,29 +3,178 @@
 {% block nav_settings %}active{% endblock %}
 {% block topbar_title %}⚙️ الإعدادات{% endblock %}
 {% block content %}
-<div style="max-width:600px;display:flex;flex-direction:column;gap:16px;">
+<div style="max-width:640px;display:flex;flex-direction:column;gap:16px;">
 
+  {% if saved %}
+  <div style="background:rgba(0,170,68,.12);border:1px solid rgba(0,170,68,.3);color:#00cc55;padding:12px 16px;font-size:.88rem;">
+    ✅ تم حفظ الإعدادات بنجاح
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div style="background:rgba(204,34,0,.12);border:1px solid rgba(204,34,0,.3);color:#ff6666;padding:12px 16px;font-size:.88rem;">
+    ❌ {{ error }}
+  </div>
+  {% endif %}
+
+  {% if printer_msg %}
+  <div style="background:rgba(255,214,0,.08);border:1px solid rgba(255,214,0,.2);color:var(--yellow);padding:12px 16px;font-size:.88rem;">
+    {{ printer_msg }}
+  </div>
+  {% endif %}
+
+  <!-- ── PRINTER SETTINGS ── -->
   <div class="card">
-    <div class="card-title">🖨️ إعدادات الطابعة</div>
-    <div style="font-size:.85rem;color:var(--gray);margin-bottom:16px;">
-      أضف هذه المتغيرات في ملف <code style="background:rgba(255,255,255,.08);padding:2px 6px;">.env</code>
+    <div class="card-title">🖨️ إعدادات الطابعة الحرارية</div>
+    <div style="font-size:.84rem;color:var(--gray);margin-bottom:18px;">
+      الطابعة الحرارية متصلة بالشبكة (LAN). أدخل عنوان IP والمنفذ.
     </div>
-    <div style="background:#111;padding:14px;font-family:monospace;font-size:.82rem;color:#88ff88;line-height:1.8;">
-      # USB Printer (default)<br>
-      PRINTER_TYPE=usb<br>
-      PRINTER_USB_VENDOR=0x04b8<br>
-      PRINTER_USB_PRODUCT=0x0202<br>
-      <br>
-      # OR Network Printer (LAN/WiFi)<br>
-      PRINTER_TYPE=network<br>
-      PRINTER_HOST=192.168.1.200<br>
-      PRINTER_PORT=9100
-    </div>
-    <div style="margin-top:14px;">
-      <a href="/dashboard/printer/test/" class="btn btn-outline btn-sm">🖨️ اختبار الطابعة</a>
-    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="printer">
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Printer type -->
+        <div>
+          <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">نوع الاتصال</label>
+          <div style="display:flex;gap:10px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem;">
+              <input type="radio" name="printer_type" value="network"
+                     {% if printer.type == 'network' or not printer.type %}checked{% endif %}
+                     style="accent-color:var(--yellow);">
+              🌐 شبكة (LAN/WiFi)
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem;">
+              <input type="radio" name="printer_type" value="usb"
+                     {% if printer.type == 'usb' %}checked{% endif %}
+                     style="accent-color:var(--yellow);">
+              🔌 USB
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem;">
+              <input type="radio" name="printer_type" value="none"
+                     {% if printer.type == 'none' %}checked{% endif %}
+                     style="accent-color:var(--yellow);">
+              ❌ بدون طابعة
+            </label>
+          </div>
+        </div>
+
+        <!-- Network settings -->
+        <div id="network-fields" style="display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">
+              عنوان IP الطابعة
+            </label>
+            <input type="text" name="printer_host"
+                   value="{{ printer.host }}"
+                   placeholder="192.168.1.200"
+                   style="width:100%;background:#111;border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 14px;font-size:.88rem;border-radius:2px;outline:none;"
+                   onfocus="this.style.borderColor='var(--yellow)'"
+                   onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+            <div style="font-size:.75rem;color:var(--gray);margin-top:4px;">
+              اطبع صفحة اختبار من الطابعة للحصول على عنوان IP
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">
+              المنفذ (Port)
+            </label>
+            <input type="number" name="printer_port"
+                   value="{{ printer.port|default:'9100' }}"
+                   placeholder="9100"
+                   style="width:200px;background:#111;border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 14px;font-size:.88rem;border-radius:2px;outline:none;"
+                   onfocus="this.style.borderColor='var(--yellow)'"
+                   onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+            <div style="font-size:.75rem;color:var(--gray);margin-top:4px;">
+              المنفذ الافتراضي للطابعات الحرارية هو 9100
+            </div>
+          </div>
+        </div>
+
+        <!-- USB settings -->
+        <div id="usb-fields" style="display:none;flex-direction:column;gap:12px;">
+          <div>
+            <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">Vendor ID</label>
+            <input type="text" name="printer_vendor_id"
+                   value="{{ printer.vendor_id|default:'0x04b8' }}"
+                   placeholder="0x04b8"
+                   style="width:200px;background:#111;border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 14px;font-size:.88rem;border-radius:2px;">
+          </div>
+          <div>
+            <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">Product ID</label>
+            <input type="text" name="printer_product_id"
+                   value="{{ printer.product_id|default:'0x0202' }}"
+                   placeholder="0x0202"
+                   style="width:200px;background:#111;border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 14px;font-size:.88rem;border-radius:2px;">
+          </div>
+        </div>
+
+        <!-- Auto print toggle -->
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid rgba(255,255,255,.06);">
+          <input type="checkbox" name="auto_print" id="auto_print" value="yes"
+                 {% if printer.auto_print != 'no' %}checked{% endif %}
+                 style="accent-color:var(--yellow);width:16px;height:16px;">
+          <label for="auto_print" style="font-size:.88rem;cursor:pointer;">
+            🖨️ طباعة تلقائية عند كل طلب جديد
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;padding-top:8px;">
+          <button type="submit" class="btn btn-yellow">💾 حفظ الإعدادات</button>
+          <a href="/dashboard/printer/test/" class="btn btn-outline">🖨️ اختبار الطابعة</a>
+        </div>
+
+      </div>
+    </form>
   </div>
 
+  <!-- ── RESTAURANT INFO ── -->
+  <div class="card">
+    <div class="card-title">🏪 معلومات المطعم</div>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="restaurant">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+
+        <div>
+          <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">اسم المطعم (عربي)</label>
+          <input type="text" name="rest_name_ar" value="{{ restaurant.name_ar }}"
+                 placeholder="لوكو أبو شادي"
+                 style="width:100%;background:#111;border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 14px;font-size:.88rem;border-radius:2px;">
+        </div>
+
+        <div>
+          <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">اسم المطعم (عبري)</label>
+          <input type="text" name="rest_name_he" value="{{ restaurant.name_he }}"
+                 placeholder="לוקו אבו שאדי"
+                 style="width:100%;background:#111;border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 14px;font-size:.88rem;border-radius:2px;">
+        </div>
+
+        <div>
+          <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">المدينة</label>
+          <input type="text" name="rest_city" value="{{ restaurant.city }}"
+                 placeholder="الناصرة"
+                 style="width:100%;background:#111;border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 14px;font-size:.88rem;border-radius:2px;">
+        </div>
+
+        <div>
+          <label style="font-size:.82rem;color:var(--gray);display:block;margin-bottom:6px;">رقم الهاتف</label>
+          <input type="text" name="rest_phone" value="{{ restaurant.phone }}"
+                 placeholder="+972..."
+                 style="width:100%;background:#111;border:1px solid rgba(255,255,255,.1);color:var(--white);padding:10px 14px;font-size:.88rem;border-radius:2px;">
+        </div>
+
+        <div>
+          <button type="submit" class="btn btn-yellow">💾 حفظ</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- ── PDF RECEIPTS ── -->
   <div class="card">
     <div class="card-title">📄 وصل PDF</div>
     <div style="font-size:.85rem;color:var(--gray);margin-bottom:12px;">
@@ -34,10 +183,18 @@
     <a href="/dashboard/orders/" class="btn btn-yellow btn-sm">عرض الطلبات</a>
   </div>
 
-  <div class="card">
-    <div class="card-title">📱 SMS الإشعارات</div>
-    <div style="font-size:.85rem;color:var(--gray);">قريباً — Twilio SMS</div>
-  </div>
-
 </div>
+
+<script>
+  // Show/hide fields based on printer type selection
+  function updatePrinterFields() {
+    var type = document.querySelector('input[name="printer_type"]:checked').value;
+    document.getElementById('network-fields').style.display = type === 'network' ? 'flex' : 'none';
+    document.getElementById('usb-fields').style.display     = type === 'usb'     ? 'flex' : 'none';
+  }
+  document.querySelectorAll('input[name="printer_type"]').forEach(function(r) {
+    r.addEventListener('change', updatePrinterFields);
+  });
+  updatePrinterFields();
+</script>
 {% endblock %}
