@@ -231,31 +231,68 @@ def category_delete(request, pk):
 @owner_required
 def topping_list(request):
     if request.method == 'POST':
-        # Manual save to handle group field
-        name_ar = request.POST.get('name_ar', '')
-        name_he = request.POST.get('name_he', '')
-        name    = request.POST.get('name', '')
-        price   = request.POST.get('price', 0)
-        group_id = request.POST.get('group')
-        is_available = 'is_available' in request.POST
+        action = request.POST.get('action', 'add_topping')
 
-        if name_ar:
-            topping = Topping(
-                name_ar=name_ar, name_he=name_he, name=name,
-                price=price, is_available=is_available
-            )
-            if group_id:
-                topping.group_id = int(group_id)
-            topping.save()
+        if action == 'add_topping':
+            name_ar = request.POST.get('name_ar', '')
+            name_he = request.POST.get('name_he', '')
+            name = request.POST.get('name', '')
+            price = request.POST.get('price', 0)
+            group_id = request.POST.get('group')
+            is_available = 'is_available' in request.POST
+
+            if name_ar:
+                topping = Topping(
+                    name_ar=name_ar, name_he=name_he, name=name,
+                    price=price, is_available=is_available
+                )
+                if group_id:
+                    topping.group_id = int(group_id)
+                topping.save()
+
+        elif action == 'add_group':
+            name_ar = request.POST.get('group_name_ar', '').strip()
+            name_he = request.POST.get('group_name_he', '').strip()
+            icon = request.POST.get('group_icon', '🥗').strip()
+            sort = request.POST.get('group_sort', 0)
+            if name_ar:
+                ToppingGroup.objects.create(
+                    name_ar=name_ar,
+                    name_he=name_he,
+                    icon=icon or '🥗',
+                    sort_order=int(sort) if sort else 0,
+                )
+
         return redirect('dashboard:toppings')
 
-    groups   = ToppingGroup.objects.prefetch_related('toppings').all()
+    groups = ToppingGroup.objects.prefetch_related('toppings').all().order_by('sort_order')
     toppings = Topping.objects.select_related('group').all()
     return render(request, 'dashboard/toppings.html', {
-        'groups':   groups,
+        'groups': groups,
         'toppings': toppings,
     })
 
+
+@owner_required
+def topping_group_edit(request, pk):
+    group = get_object_or_404(ToppingGroup, pk=pk)
+    if request.method == 'POST':
+        group.name_ar = request.POST.get('group_name_ar', '').strip()
+        group.name_he = request.POST.get('group_name_he', '').strip()
+        group.icon = request.POST.get('group_icon', '🥗').strip() or '🥗'
+        group.sort_order = int(request.POST.get('group_sort', 0) or 0)
+        group.save()
+        return redirect('dashboard:toppings')
+    return render(request, 'dashboard/group_form.html', {'group': group})
+
+
+@owner_required
+def topping_group_delete(request, pk):
+    group = get_object_or_404(ToppingGroup, pk=pk)
+    if request.method == 'POST':
+        group.delete()
+        return redirect('dashboard:toppings')
+    return render(request, 'dashboard/confirm_delete.html', {'obj': group, 'type': 'مجموعة الإضافات'})
 
 @owner_required
 def topping_edit(request, pk):

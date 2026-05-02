@@ -28,4 +28,7 @@ urlpatterns = [
     path('orders/<int:pk>/receipt/', views.order_receipt_pdf, name='order_receipt'),
     path('printer/test/', views.printer_test, name='printer_test'),
     path('settings/',                     views.site_settings,     name='settings'),
+
+    path('menu/topping/group/<int:pk>/edit/',   views.topping_group_edit,   name='topping_group_edit'),
+    path('menu/topping/group/<int:pk>/delete/', views.topping_group_delete, name='topping_group_delete'),
 ]

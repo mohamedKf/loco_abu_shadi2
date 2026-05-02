@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
-{% block title %}{{ action }} صنف{% block extra_js %}
+{% block title %}{{ action }} صنف{% endblock %}
+{% block extra_js %}
 <script>
 const cb = document.querySelector('[name="sold_by_weight"]');
 const wf = document.getElementById('weightFields');
