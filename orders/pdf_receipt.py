@@ -1,43 +1,18 @@
 """
-PDF Receipt — single language based on order.language
+PDF Receipt — 80mm thermal printer
+Uses only standard fonts (no Arabic font needed on server)
+RTL text handled via python-bidi + arabic-reshaper
 """
-from reportlab.lib.pagesizes import A5
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib import colors
 from io import BytesIO
-import os
 
-# ── Font registration ─────────────────────────────────────
-_fonts_registered = False
+W = 80 * mm  # 80mm thermal paper width
 
-def _reg():
-    global _fonts_registered
-    if _fonts_registered:
-        return
-    paths = {
-        'AR_B': ['/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf',
-                 'C:/Windows/Fonts/arialbd.ttf'],
-        'AR_R': ['/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf',
-                 'C:/Windows/Fonts/arial.ttf'],
-        'HE_B': ['/usr/share/fonts/truetype/noto/NotoSansHebrew-Bold.ttf',
-                 'C:/Windows/Fonts/arialbd.ttf'],
-        'HE_R': ['/usr/share/fonts/truetype/noto/NotoSansHebrew-Regular.ttf',
-                 'C:/Windows/Fonts/arial.ttf'],
-    }
-    for name, tries in paths.items():
-        for p in tries:
-            if os.path.exists(p):
-                try:
-                    pdfmetrics.registerFont(TTFont(name, p))
-                    break
-                except Exception:
-                    pass
-    _fonts_registered = True
 
 def _rtl(text):
+    """Convert Arabic/Hebrew text for correct display."""
     try:
         import arabic_reshaper
         from bidi.algorithm import get_display
@@ -49,73 +24,80 @@ def _rtl(text):
         except Exception:
             return str(text)
 
-# ── Language config ───────────────────────────────────────
+
 def _cfg(lang):
-    """Return font names and strings for the given language."""
-    _reg()
     if lang == 'he':
         return {
-            'bold':  'HE_B' if _font_exists('HE_B') else 'Helvetica-Bold',
-            'reg':   'HE_R' if _font_exists('HE_R') else 'Helvetica',
-            'rtl':   True,
-            'sub':   'אבו שאדי — נצרת',
-            'table': 'שולחן',
-            'cash_order': 'הזמנת קופה',
-            'total': 'סה"כ',
-            'pay':   {'cash': 'מזומן', 'cashier_card': 'כרטיס בקופה', 'online': 'תשלום אונליין'},
-            'thanks': 'תודה על ביקורכם! 🔥',
-            'note':  'זהו קבלה פנימית — לא חשבונית מס',
+            'rtl':     True,
+            'sub':     _rtl('אבו שאדי — נצרת'),
+            'table':   _rtl('שולחן'),
+            'cashier': _rtl('הזמנת קופה'),
+            'total':   _rtl('סה"כ'),
+            'pay': {
+                'cash':         _rtl('מזומן'),
+                'cashier_card': _rtl('כרטיס בקופה'),
+                'online':       _rtl('תשלום אונליין'),
+            },
+            'thanks':  _rtl('תודה על ביקורכם!'),
+            'note':    _rtl('קבלה פנימית — לא חשבונית מס'),
         }
     elif lang == 'en':
         return {
-            'bold':  'Helvetica-Bold',
-            'reg':   'Helvetica',
-            'rtl':   False,
-            'sub':   'Abu Shadi — Nazareth',
-            'table': 'Table',
-            'cash_order': 'Cashier Order',
-            'total': 'TOTAL',
-            'pay':   {'cash': 'Cash', 'cashier_card': 'Card at Cashier', 'online': 'Online Payment'},
-            'thanks': 'Thank you for visiting! 🔥',
-            'note':  'Internal receipt — not a tax invoice',
+            'rtl':     False,
+            'sub':     'Abu Shadi — Nazareth',
+            'table':   'Table',
+            'cashier': 'Cashier Order',
+            'total':   'TOTAL',
+            'pay': {
+                'cash':         'Cash',
+                'cashier_card': 'Card at Cashier',
+                'online':       'Online Payment',
+            },
+            'thanks':  'Thank you for visiting!',
+            'note':    'Internal receipt — not a tax invoice',
         }
     else:  # ar
         return {
-            'bold':  'AR_B' if _font_exists('AR_B') else 'Helvetica-Bold',
-            'reg':   'AR_R' if _font_exists('AR_R') else 'Helvetica',
-            'rtl':   True,
-            'sub':   'أبو شادي — الناصرة',
-            'table': 'طاولة',
-            'cash_order': 'طلب كاشير',
-            'total': 'المجموع',
-            'pay':   {'cash': 'كاش', 'cashier_card': 'بطاقة كاشير', 'online': 'دفع اونلاين'},
-            'thanks': 'شكراً لزيارتكم! 🔥',
-            'note':  'هذا وصل داخلي — ليس فاتورة ضريبية',
+            'rtl':     True,
+            'sub':     _rtl('أبو شادي — الناصرة'),
+            'table':   _rtl('طاولة'),
+            'cashier': _rtl('طلب كاشير'),
+            'total':   _rtl('المجموع'),
+            'pay': {
+                'cash':         _rtl('كاش'),
+                'cashier_card': _rtl('بطاقة كاشير'),
+                'online':       _rtl('دفع اونلاين'),
+            },
+            'thanks':  _rtl('شكراً لزيارتكم!'),
+            'note':    _rtl('وصل داخلي — ليس فاتورة ضريبية'),
         }
 
-def _font_exists(name):
+
+def _safe_name(item, lang):
+    """Get item name safely even if item is None."""
+    if not item:
+        return '-'
     try:
-        pdfmetrics.getFont(name)
-        return True
+        if lang == 'he':
+            return item.name_he or item.name_ar or item.name or '-'
+        elif lang == 'en':
+            return item.name or item.name_ar or '-'
+        return item.name_ar or item.name or '-'
     except Exception:
-        return False
-
-def _item_name(item, lang):
-    if lang == 'he':
-        return item.name_he or item.name_ar or item.name
-    elif lang == 'en':
-        return item.name or item.name_ar
-    return item.name_ar or item.name
-
-def _top_name(t, lang):
-    if lang == 'he':
-        return t.name_he or t.name_ar or t.name
-    elif lang == 'en':
-        return t.name or t.name_ar
-    return t.name_ar or t.name
+        return '-'
 
 
-# ── Main generator ────────────────────────────────────────
+def _safe_top_name(t, lang):
+    try:
+        if lang == 'he':
+            return t.name_he or t.name_ar or t.name or ''
+        elif lang == 'en':
+            return t.name or t.name_ar or ''
+        return t.name_ar or t.name or ''
+    except Exception:
+        return ''
+
+
 def generate_order_pdf(order, lang=None):
     if lang is None:
         lang = getattr(order, 'language', 'ar') or 'ar'
@@ -123,192 +105,215 @@ def generate_order_pdf(order, lang=None):
     cfg = _cfg(lang)
     rtl = cfg['rtl']
 
+    # Collect all items first to calculate height
+    items_data = []
+    try:
+        for oi in order.items.prefetch_related('toppings').all():
+            try:
+                name = _safe_name(oi.menu_item, lang)
+                if rtl:
+                    name = _rtl(name)
+                qty = f'{oi.weight_grams}g' if oi.weight_grams else f'x{oi.quantity}'
+                price = f'NIS {oi.get_subtotal()}'
+                tops = []
+                for t in oi.toppings.all():
+                    tname = _safe_top_name(t, lang)
+                    if tname:
+                        if rtl:
+                            tname = _rtl(tname)
+                        tprice = float(t.price) if t.price else 0
+                        tops.append((tname, f'+NIS {t.price}' if tprice > 0 else ''))
+                notes = oi.notes or ''
+                items_data.append({
+                    'name': name, 'qty': qty, 'price': price,
+                    'tops': tops, 'notes': notes,
+                })
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # Calculate dynamic height
+    lines = 20  # header + footer
+    for item in items_data:
+        lines += 2 + len(item['tops']) + (1 if item['notes'] else 0)
+    H = max(120, lines * 5) * mm
+
     buf = BytesIO()
-    W=80*mm
-    H=297*mm
-    c = canvas.Canvas(buf, pagesize=A5)
+    c   = canvas.Canvas(buf, pagesize=(W, H))
 
-    PAD   = 10 * mm
-    # B&W printer safe colors
-    YELLOW = colors.black          # header background → solid black
-    BLACK  = colors.black
-    GRAY   = colors.HexColor('#444444')
-    ORANGE = colors.HexColor('#222222')  # toppings → dark gray
-    WHITE  = colors.white
+    PAD   = 4 * mm
+    BLACK = colors.black
+    WHITE = colors.white
+    GRAY  = colors.HexColor('#555555')
+    LGRAY = colors.HexColor('#888888')
 
-    y = H - 5 * mm
+    BOLD = 'Helvetica-Bold'
+    REG  = 'Helvetica'
 
-    def sp(n=3):
+    y = H - 4 * mm
+
+    def sp(n=2):
         nonlocal y
         y -= n * mm
 
-    def hline(col=GRAY, w=0.4):
+    def hline(col=GRAY, lw=0.3):
         nonlocal y
         c.setStrokeColor(col)
-        c.setLineWidth(w)
+        c.setLineWidth(lw)
         c.line(PAD, y, W - PAD, y)
-        y -= 4 * mm
+        y -= 3 * mm
 
-    def cen(txt, font, size, col):
+    def cen(txt, size, bold=False, col=BLACK):
         nonlocal y
-        c.setFont(font, size)
+        c.setFont(BOLD if bold else REG, size)
         c.setFillColor(col)
-        s = _rtl(txt) if rtl else str(txt)
-        c.drawCentredString(W / 2, y, s)
-        y -= size * 0.5 + 2 * mm
+        c.drawCentredString(W / 2, y, str(txt))
+        y -= size * 0.42 + 1.5 * mm
 
-    # ── HEADER ──
-    c.setFillColor(YELLOW)
-    c.rect(0, H - 28*mm, W, 28*mm, fill=1, stroke=0)
-    c.setFont('Helvetica-Bold', 30)
-    c.setFillColor(WHITE)        # white text on black header
-    c.drawCentredString(W/2, H - 14*mm, 'LOCO')
-    c.setFont(cfg['bold'], 10)
-    sub = _rtl(cfg['sub']) if rtl else cfg['sub']
-    c.drawCentredString(W/2, H - 22*mm, sub)
+    def left_right(ltxt, rtxt, size, bold_l=False, bold_r=True, col=BLACK):
+        nonlocal y
+        c.setFont(BOLD if bold_l else REG, size)
+        c.setFillColor(col)
+        c.drawString(PAD, y, str(ltxt))
+        c.setFont(BOLD if bold_r else REG, size)
+        c.drawRightString(W - PAD, y, str(rtxt))
+        y -= size * 0.42 + 1.5 * mm
 
-    y = H - 33*mm
-    sp(2)
-
-    # Order number
-    c.setFont('Helvetica-Bold', 22)
+    # ══ HEADER ══
     c.setFillColor(BLACK)
-    c.drawCentredString(W/2, y, '#' + str(order.id).zfill(6))
-    y -= 10*mm
+    c.rect(0, H - 20*mm, W, 20*mm, fill=1, stroke=0)
+    c.setFont(BOLD, 18)
+    c.setFillColor(WHITE)
+    c.drawCentredString(W/2, H - 10*mm, 'LOCO')
+    c.setFont(REG, 7)
+    c.drawCentredString(W/2, H - 16*mm, cfg['sub'])
 
-    # Location
+    y = H - 24*mm
+    sp(1)
+
+    # Order # + location
+    c.setFont(BOLD, 13)
+    c.setFillColor(BLACK)
+    c.drawCentredString(W/2, y, f'#{str(order.id).zfill(4)}')
+    y -= 7*mm
+
     if order.table:
         loc = cfg['table'] + ' ' + str(order.table.number)
     else:
-        loc = cfg['cash_order']
-    cen(loc, cfg['reg'], 9, GRAY)
+        loc = cfg['cashier']
+    cen(loc, 8, col=GRAY)
 
-    # Date
     dt = order.created_at
-    c.setFont('Helvetica', 9)
-    c.setFillColor(GRAY)
-    c.drawCentredString(W/2, y, dt.strftime('%d/%m/%Y   %H:%M'))
-    y -= 7*mm
+    cen(dt.strftime('%d/%m/%Y   %H:%M'), 8, col=GRAY)
 
     sp(1)
-    hline(BLACK, 1.0)
+    hline(BLACK, 0.8)
 
-    # ── ITEMS ──
-    for oi in order.items.all():
-        name = _item_name(oi.menu_item, lang)
-        if oi.weight_grams:
-            display_qty = str(oi.weight_grams) + 'g'
-        else:
-            display_qty = 'x' + str(oi.quantity)
-
-        price_str = 'NIS ' + str(oi.get_subtotal())
-
-        # Item row: name left/right, price opposite
-        c.setFont(cfg['bold'], 10)
-        c.setFillColor(BLACK)
-
-        name_display = _rtl(name) if rtl else name
-        qty_str = display_qty + '  '
+    # ══ ITEMS ══
+    for item in items_data:
+        name  = item['name']
+        qty   = item['qty']
+        price = item['price']
 
         if rtl:
-            # Name on right, price on left
-            c.drawRightString(W - PAD, y, name_display)
-            c.setFont('Helvetica-Bold', 9)
-            c.drawString(PAD, y, price_str)
-            # qty next to price
-            c.setFont(cfg['reg'], 8)
-            c.setFillColor(GRAY)
-            pw = c.stringWidth(price_str, 'Helvetica-Bold', 9)
-            c.drawString(PAD + pw + 2*mm, y, qty_str)
+            # RTL: name on right, price on left
+            c.setFont(BOLD, 9)
+            c.setFillColor(BLACK)
+            c.drawRightString(W - PAD, y, name)
+            c.setFont(BOLD, 9)
+            c.drawString(PAD, y, price)
+            c.setFont(REG, 8)
+            c.setFillColor(LGRAY)
+            c.drawString(PAD + c.stringWidth(price, BOLD, 9) + 2*mm, y, qty)
         else:
-            c.drawString(PAD, y, name_display)
-            c.setFont('Helvetica-Bold', 9)
-            c.drawRightString(W - PAD, y, price_str)
-            c.setFont(cfg['reg'], 8)
-            c.setFillColor(GRAY)
-            c.drawString(PAD + c.stringWidth(name_display, cfg['bold'], 10) + 2*mm, y, qty_str)
+            c.setFont(BOLD, 9)
+            c.setFillColor(BLACK)
+            c.drawString(PAD, y, f'{qty}  {name}')
+            c.setFont(BOLD, 9)
+            c.drawRightString(W - PAD, y, price)
 
-        y -= 6*mm
+        y -= 5*mm
 
-        # Each topping on its own line
-        for t in oi.toppings.all():
-            tname = _top_name(t, lang)
-            tprice = float(t.price) if t.price else 0
-            if tprice > 0:
-                tline = '+ ' + tname + '  +NIS ' + str(t.price)
-            else:
-                tline = '+ ' + tname
-
-            c.setFont(cfg['reg'], 8.5)
-            c.setFillColor(ORANGE)
+        # Toppings
+        for (tname, tprice) in item['tops']:
+            c.setFont(REG, 7.5)
+            c.setFillColor(LGRAY)
             if rtl:
-                c.drawRightString(W - PAD - 4*mm, y, _rtl(tline))
+                c.drawRightString(W - PAD - 3*mm, y, f'+ {tname}')
+                if tprice:
+                    c.drawString(PAD, y, tprice)
             else:
-                c.drawString(PAD + 4*mm, y, tline)
-            y -= 5*mm
+                c.drawString(PAD + 3*mm, y, f'+ {tname}')
+                if tprice:
+                    c.drawRightString(W - PAD, y, tprice)
+            y -= 4*mm
 
-        # Item notes
-        if oi.notes:
-            c.setFont(cfg['reg'], 8)
-            c.setFillColor(GRAY)
-            note_txt = '* ' + oi.notes
+        # Notes
+        if item['notes']:
+            c.setFont(REG, 7)
+            c.setFillColor(LGRAY)
+            note = f'* {item["notes"]}'
             if rtl:
-                c.drawRightString(W - PAD - 4*mm, y, _rtl(note_txt))
+                c.drawRightString(W - PAD - 3*mm, y, _rtl(note))
             else:
-                c.drawString(PAD + 4*mm, y, note_txt)
-            y -= 5*mm
+                c.drawString(PAD + 3*mm, y, note)
+            y -= 4*mm
 
-        # Thin line between items
-        c.setStrokeColor(colors.HexColor('#1e1e1e'))
-        c.setLineWidth(0.3)
-        c.line(PAD + 6*mm, y + 2*mm, W - PAD - 6*mm, y + 2*mm)
+        # Item divider
+        c.setStrokeColor(colors.HexColor('#cccccc'))
+        c.setLineWidth(0.2)
+        c.line(PAD + 4*mm, y + 1*mm, W - PAD - 4*mm, y + 1*mm)
         y -= 3*mm
 
     sp(1)
-    hline(BLACK, 1.0)
-    sp(2)
+    hline(BLACK, 0.8)
+    sp(1)
 
-    # ── TOTAL BOX ──
-    box_h = 13*mm
+    # ══ TOTAL ══
+    box_h = 10*mm
     c.setFillColor(BLACK)
     c.rect(PAD, y - box_h + 3*mm, W - 2*PAD, box_h, fill=1, stroke=0)
 
-    total_lbl = _rtl(cfg['total']) if rtl else cfg['total']
-    c.setFont(cfg['bold'], 11)
-    c.setFillColor(WHITE)        # white text on black box
+    total_lbl = cfg['total']
+    total_val = f'NIS {order.total_price}'
+
+    c.setFont(BOLD, 10)
+    c.setFillColor(WHITE)
     if rtl:
-        c.drawRightString(W - PAD - 3*mm, y - 3*mm, total_lbl)
-        c.setFont('Helvetica-Bold', 14)
-        c.drawString(PAD + 3*mm, y - 3*mm, 'NIS ' + str(order.total_price))
+        c.drawRightString(W - PAD - 2*mm, y - 4*mm, total_lbl)
+        c.setFont(BOLD, 12)
+        c.drawString(PAD + 2*mm, y - 4*mm, total_val)
     else:
-        c.drawString(PAD + 3*mm, y - 3*mm, total_lbl)
-        c.setFont('Helvetica-Bold', 14)
-        c.drawRightString(W - PAD - 3*mm, y - 3*mm, 'NIS ' + str(order.total_price))
-    y -= box_h + 2*mm
+        c.drawString(PAD + 2*mm, y - 4*mm, total_lbl)
+        c.setFont(BOLD, 12)
+        c.drawRightString(W - PAD - 2*mm, y - 4*mm, total_val)
 
-    sp(3)
+    y -= box_h + 4*mm
 
-    # ── PAYMENT ──
-    pm  = order.payment_method
+    # ══ PAYMENT ══
+    pm  = order.payment_method or 'cash'
     pay = cfg['pay'].get(pm, pm)
-    cen(pay, cfg['reg'], 9, GRAY)
+    cen(pay, 8, col=GRAY)
 
     if order.customer_name:
-        cen(order.customer_name, 'Helvetica', 9, GRAY)
+        cen(order.customer_name, 8, col=GRAY)
     if order.customer_phone:
-        cen(order.customer_phone, 'Helvetica', 9, GRAY)
+        cen(order.customer_phone, 8, col=GRAY)
     if order.notes:
         sp(1)
-        cen('* ' + order.notes, cfg['reg'], 8, ORANGE)
+        note_rtl = _rtl(order.notes) if rtl else order.notes
+        cen(f'* {note_rtl}', 7, col=LGRAY)
 
-    sp(4)
-    hline(GRAY, 0.3)
     sp(2)
-
-    # ── FOOTER ──
-    cen(cfg['thanks'], cfg['bold'], 10, BLACK)
+    hline(LGRAY, 0.3)
     sp(1)
-    cen(cfg['note'], cfg['reg'], 7, GRAY)
+
+    # ══ FOOTER ══
+    cen(cfg['thanks'], 9, bold=True)
+    sp(1)
+    cen(cfg['note'], 6, col=LGRAY)
+    sp(2)
 
     c.save()
     buf.seek(0)
