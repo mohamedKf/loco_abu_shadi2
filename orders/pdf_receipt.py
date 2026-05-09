@@ -124,7 +124,8 @@ def generate_order_pdf(order, lang=None):
     rtl = cfg['rtl']
 
     buf = BytesIO()
-    W, H = A5
+    W=80*mm
+    H=297*mm
     c = canvas.Canvas(buf, pagesize=A5)
 
     PAD   = 10 * mm
