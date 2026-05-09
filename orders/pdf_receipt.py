@@ -1,18 +1,78 @@
 """
 PDF Receipt — 80mm thermal printer
-Uses only standard fonts (no Arabic font needed on server)
-RTL text handled via python-bidi + arabic-reshaper
+Embeds Arial font from project static/fonts/ folder
+Falls back to system fonts or Helvetica
 """
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
+import os
 
 W = 80 * mm  # 80mm thermal paper width
 
+# ── Font setup ────────────────────────────────────────────
+_fonts_ready = False
+
+def _setup_fonts():
+    global _fonts_ready
+    if _fonts_ready:
+        return
+
+    # Base directory of the Django project
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    font_searches = {
+        'Receipt-Regular': [
+            # Project bundled fonts (works everywhere)
+            os.path.join(base, 'static', 'fonts', 'arial.ttf'),
+            os.path.join(base, 'staticfiles', 'fonts', 'arial.ttf'),
+            # Linux (Railway)
+            '/usr/share/fonts/truetype/noto/NotoNaskhArabic-Regular.ttf',
+            '/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            # Windows
+            'C:/Windows/Fonts/arial.ttf',
+            'C:/Windows/Fonts/tahoma.ttf',
+        ],
+        'Receipt-Bold': [
+            os.path.join(base, 'static', 'fonts', 'arialbd.ttf'),
+            os.path.join(base, 'staticfiles', 'fonts', 'arialbd.ttf'),
+            '/usr/share/fonts/truetype/noto/NotoNaskhArabic-Bold.ttf',
+            '/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+            'C:/Windows/Fonts/arialbd.ttf',
+            'C:/Windows/Fonts/tahomabd.ttf',
+        ],
+    }
+
+    for font_name, paths in font_searches.items():
+        for path in paths:
+            if os.path.exists(path):
+                try:
+                    pdfmetrics.registerFont(TTFont(font_name, path))
+                    break
+                except Exception:
+                    continue
+
+    _fonts_ready = True
+
+
+def _get_fonts():
+    """Return (bold_font, regular_font) names."""
+    _setup_fonts()
+    try:
+        pdfmetrics.getFont('Receipt-Bold')
+        return 'Receipt-Bold', 'Receipt-Regular'
+    except Exception:
+        return 'Helvetica-Bold', 'Helvetica'
+
 
 def _rtl(text):
-    """Convert Arabic/Hebrew text for correct display."""
     try:
         import arabic_reshaper
         from bidi.algorithm import get_display
@@ -25,7 +85,7 @@ def _rtl(text):
             return str(text)
 
 
-def _cfg(lang):
+def _cfg(lang, BOLD, REG):
     if lang == 'he':
         return {
             'rtl':     True,
@@ -74,7 +134,6 @@ def _cfg(lang):
 
 
 def _safe_name(item, lang):
-    """Get item name safely even if item is None."""
     if not item:
         return '-'
     try:
@@ -102,10 +161,11 @@ def generate_order_pdf(order, lang=None):
     if lang is None:
         lang = getattr(order, 'language', 'ar') or 'ar'
 
-    cfg = _cfg(lang)
+    BOLD, REG = _get_fonts()
+    cfg = _cfg(lang, BOLD, REG)
     rtl = cfg['rtl']
 
-    # Collect all items first to calculate height
+    # Collect all items
     items_data = []
     try:
         for oi in order.items.prefetch_related('toppings').all():
@@ -113,9 +173,9 @@ def generate_order_pdf(order, lang=None):
                 name = _safe_name(oi.menu_item, lang)
                 if rtl:
                     name = _rtl(name)
-                qty = f'{oi.weight_grams}g' if oi.weight_grams else f'x{oi.quantity}'
+                qty   = f'{oi.weight_grams}g' if oi.weight_grams else f'x{oi.quantity}'
                 price = f'NIS {oi.get_subtotal()}'
-                tops = []
+                tops  = []
                 for t in oi.toppings.all():
                     tname = _safe_top_name(t, lang)
                     if tname:
@@ -133,8 +193,8 @@ def generate_order_pdf(order, lang=None):
     except Exception:
         pass
 
-    # Calculate dynamic height
-    lines = 20  # header + footer
+    # Dynamic height
+    lines = 22
     for item in items_data:
         lines += 2 + len(item['tops']) + (1 if item['notes'] else 0)
     H = max(120, lines * 5) * mm
@@ -147,9 +207,6 @@ def generate_order_pdf(order, lang=None):
     WHITE = colors.white
     GRAY  = colors.HexColor('#555555')
     LGRAY = colors.HexColor('#888888')
-
-    BOLD = 'Helvetica-Bold'
-    REG  = 'Helvetica'
 
     y = H - 4 * mm
 
@@ -171,15 +228,6 @@ def generate_order_pdf(order, lang=None):
         c.drawCentredString(W / 2, y, str(txt))
         y -= size * 0.42 + 1.5 * mm
 
-    def left_right(ltxt, rtxt, size, bold_l=False, bold_r=True, col=BLACK):
-        nonlocal y
-        c.setFont(BOLD if bold_l else REG, size)
-        c.setFillColor(col)
-        c.drawString(PAD, y, str(ltxt))
-        c.setFont(BOLD if bold_r else REG, size)
-        c.drawRightString(W - PAD, y, str(rtxt))
-        y -= size * 0.42 + 1.5 * mm
-
     # ══ HEADER ══
     c.setFillColor(BLACK)
     c.rect(0, H - 20*mm, W, 20*mm, fill=1, stroke=0)
@@ -192,16 +240,12 @@ def generate_order_pdf(order, lang=None):
     y = H - 24*mm
     sp(1)
 
-    # Order # + location
     c.setFont(BOLD, 13)
     c.setFillColor(BLACK)
     c.drawCentredString(W/2, y, f'#{str(order.id).zfill(4)}')
     y -= 7*mm
 
-    if order.table:
-        loc = cfg['table'] + ' ' + str(order.table.number)
-    else:
-        loc = cfg['cashier']
+    loc = (cfg['table'] + ' ' + str(order.table.number)) if order.table else cfg['cashier']
     cen(loc, 8, col=GRAY)
 
     dt = order.created_at
@@ -217,25 +261,22 @@ def generate_order_pdf(order, lang=None):
         price = item['price']
 
         if rtl:
-            # RTL: name on right, price on left
             c.setFont(BOLD, 9)
             c.setFillColor(BLACK)
             c.drawRightString(W - PAD, y, name)
-            c.setFont(BOLD, 9)
             c.drawString(PAD, y, price)
-            c.setFont(REG, 8)
+            c.setFont(REG, 7.5)
             c.setFillColor(LGRAY)
-            c.drawString(PAD + c.stringWidth(price, BOLD, 9) + 2*mm, y, qty)
+            pw = c.stringWidth(price, BOLD, 9)
+            c.drawString(PAD + pw + 1.5*mm, y, qty)
         else:
             c.setFont(BOLD, 9)
             c.setFillColor(BLACK)
             c.drawString(PAD, y, f'{qty}  {name}')
-            c.setFont(BOLD, 9)
             c.drawRightString(W - PAD, y, price)
 
         y -= 5*mm
 
-        # Toppings
         for (tname, tprice) in item['tops']:
             c.setFont(REG, 7.5)
             c.setFillColor(LGRAY)
@@ -249,7 +290,6 @@ def generate_order_pdf(order, lang=None):
                     c.drawRightString(W - PAD, y, tprice)
             y -= 4*mm
 
-        # Notes
         if item['notes']:
             c.setFont(REG, 7)
             c.setFillColor(LGRAY)
@@ -260,7 +300,6 @@ def generate_order_pdf(order, lang=None):
                 c.drawString(PAD + 3*mm, y, note)
             y -= 4*mm
 
-        # Item divider
         c.setStrokeColor(colors.HexColor('#cccccc'))
         c.setLineWidth(0.2)
         c.line(PAD + 4*mm, y + 1*mm, W - PAD - 4*mm, y + 1*mm)
@@ -275,23 +314,19 @@ def generate_order_pdf(order, lang=None):
     c.setFillColor(BLACK)
     c.rect(PAD, y - box_h + 3*mm, W - 2*PAD, box_h, fill=1, stroke=0)
 
-    total_lbl = cfg['total']
-    total_val = f'NIS {order.total_price}'
-
     c.setFont(BOLD, 10)
     c.setFillColor(WHITE)
     if rtl:
-        c.drawRightString(W - PAD - 2*mm, y - 4*mm, total_lbl)
+        c.drawRightString(W - PAD - 2*mm, y - 4*mm, cfg['total'])
         c.setFont(BOLD, 12)
-        c.drawString(PAD + 2*mm, y - 4*mm, total_val)
+        c.drawString(PAD + 2*mm, y - 4*mm, f'NIS {order.total_price}')
     else:
-        c.drawString(PAD + 2*mm, y - 4*mm, total_lbl)
+        c.drawString(PAD + 2*mm, y - 4*mm, cfg['total'])
         c.setFont(BOLD, 12)
-        c.drawRightString(W - PAD - 2*mm, y - 4*mm, total_val)
+        c.drawRightString(W - PAD - 2*mm, y - 4*mm, f'NIS {order.total_price}')
 
     y -= box_h + 4*mm
 
-    # ══ PAYMENT ══
     pm  = order.payment_method or 'cash'
     pay = cfg['pay'].get(pm, pm)
     cen(pay, 8, col=GRAY)
@@ -302,14 +337,11 @@ def generate_order_pdf(order, lang=None):
         cen(order.customer_phone, 8, col=GRAY)
     if order.notes:
         sp(1)
-        note_rtl = _rtl(order.notes) if rtl else order.notes
-        cen(f'* {note_rtl}', 7, col=LGRAY)
+        cen(f'* {_rtl(order.notes) if rtl else order.notes}', 7, col=LGRAY)
 
     sp(2)
     hline(LGRAY, 0.3)
     sp(1)
-
-    # ══ FOOTER ══
     cen(cfg['thanks'], 9, bold=True)
     sp(1)
     cen(cfg['note'], 6, col=LGRAY)
